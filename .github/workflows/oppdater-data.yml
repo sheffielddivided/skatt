@@ -23,6 +23,8 @@ jobs:
           python scripts/build_profil.py
           python scripts/build_befolkning.py
           python scripts/build_ulikhet.py
+          python scripts/build_eiendom.py
+          python scripts/build_naering.py
       - name: Commit hvis endret
         run: |
           if git diff --quiet -- data; then

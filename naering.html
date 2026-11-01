@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Næringslivet · Skatt i tall</title>
+  <meta name="description" content="Næringsstrukturen i norske kommuner: hvor folk jobber, hvilke næringer kommunene lever av, og sammenhengen med skatteinngangen.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <link rel="stylesheet" href="assets/choro.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; padding: 16px 18px; margin-top: 16px; }
+    .controls #nace { width: 300px; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card { margin-top: 0; }
+    .map-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .map-card .panel-head { padding: 18px 20px 6px; margin: 0; }
+    .map-card .choro { flex: 1; min-height: 660px; }
+    .side h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin: 22px 0 8px; }
+    .side h2.big { font-size: 28px; }
+    .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 14px; }
+    .kv > div { background: var(--surface); padding: 10px 12px; }
+    .kv .k { font-size: 12px; color: var(--text-3); }
+    .kv .v { font-size: 16px; font-weight: 600; margin-top: 2px; }
+    .kv .n { font-size: 11.5px; color: var(--text-3); }
+    .rank-list { list-style: none; margin: 0; padding: 0; }
+    .rank-list li button { width: 100%; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .rank-list li button:hover { background: var(--surface-2); }
+    .rank-list .r { color: var(--text-3); font-size: 12px; }
+    .rank-list .v { font-weight: 600; }
+    .prof { display: flex; flex-direction: column; gap: 7px; }
+    .prow { display: grid; grid-template-columns: 170px minmax(0, 1fr) 54px; gap: 10px; align-items: center; font-size: 12.5px; cursor: pointer; }
+    .prow .n { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .prow .t { position: relative; height: 12px; background: var(--surface-2); border-radius: 3px; }
+    .prow .t .b { position: absolute; left: 0; top: 0; bottom: 0; background: var(--series-1); border-radius: 3px; }
+    .prow .t .m { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); border-radius: 1px; }
+    .prow .v { text-align: right; font-weight: 600; }
+    .prow:hover .n { color: var(--text); }
+    .prow.on .n { color: var(--text); font-weight: 600; }
+    .hbar .name { fill: var(--text-2); font-size: 12.5px; }
+    .hbar .val { fill: var(--text); font-size: 12.5px; font-weight: 600; }
+    .hbar .chg { font-size: 11.5px; }
+    .hbar .row { cursor: pointer; }
+    .hbar .row.on .name { fill: var(--text); font-weight: 600; }
+    .scatter .dot { stroke: var(--surface); stroke-width: 1; cursor: pointer; }
+    .scatter .dot.dim { opacity: .15; pointer-events: none; }
+    .scatter .lbl { font-size: 12px; font-weight: 600; fill: var(--text); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; pointer-events: none; }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } .map-card .choro { min-height: 70vh; } }
+    @media (max-width: 720px) { .controls .field, .controls #nace { width: 100%; } .controls .seg { width: 100%; flex-wrap: wrap; } .controls .seg button { flex: 1 1 40%; white-space: normal; } .prow { grid-template-columns: 120px minmax(0, 1fr) 48px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+  <script src="assets/choro.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Skatt i tall</span>
+      </a>
+      <nav class="nav" aria-label="Studier">
+        <a href="./">Oversikt</a>
+        <a href="kart.html">Skattekartet</a>
+        <a href="petroleum.html">Petroleumsskatten</a>
+        <a href="formue.html">Formuesskatten</a>
+        <a href="eiendomsskatt.html">Eiendomsskatten</a>
+        <a href="profil.html">Kommuneprofilen</a>
+        <a href="naering.html" aria-current="page">Næringslivet</a>
+        <a href="alder.html">Aldersbølgen</a>
+        <a href="befolkning.html">Befolkningen</a>
+        <a href="ulikhet.html">Ulikhet</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 9</span>
+        <h1 class="display">Næringslivet</h1>
+        <p class="muted">Hva lever kommunene av? Se hvor folk jobber, hvilke næringer som preger hver kommune – og hvorfor havbruk, kraft og olje gir enkelte små kommuner svært høy skatteinngang.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <h2 class="display section-title">Hele landet</h2>
+    <p class="section-lead">Sysselsatte etter arbeidssted, 4. kvartal (SSB tabell 13470). Klikk på en næring for å vise den i linjediagrammet og i kartet.</p>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2 id="c1-title"></h2><p id="c1-sub"></p></div></div>
+        <div class="chart" id="c1"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2 id="c2-title"></h2><p>Antall sysselsatte per år i landet.</p></div></div>
+        <div class="chart" id="c2"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Kommunene</h2>
+    <p class="section-lead">Velg en næring eller bransje. <b>Spesialisering</b> viser hvor mye større andel næringen har i kommunen enn i landet (1 = som landet, 3 = tre ganger så stor andel).</p>
+    <section class="card controls" aria-label="Valg">
+      <div class="field"><label for="nace">Næring</label><select id="nace" class="select"></select></div>
+      <div class="field">
+        <span class="label" id="m-label">Vis</span>
+        <div class="seg" role="group" aria-labelledby="m-label" id="metric">
+          <button data-v="share" aria-pressed="true">Andel av de sysselsatte</button>
+          <button data-v="lq" aria-pressed="false">Spesialisering</button>
+          <button data-v="n" aria-pressed="false">Antall</button>
+        </div>
+      </div>
+      <div class="field"><label for="yr">År</label><select id="yr" class="select"></select></div>
+      <div class="field"><label for="fy">Fylke</label><select id="fy" class="select"><option value="">Hele landet</option></select></div>
+      <div class="field"><label for="search">Finn kommune</label><input id="search" class="input" type="search" placeholder="F.eks. Frøya" list="klist" autocomplete="off"><datalist id="klist"></datalist></div>
+    </section>
+    <section class="kgrid">
+      <div class="card map-card">
+        <div class="panel-head"><div><h2 id="map-title"></h2><p id="map-sub"></p></div></div>
+        <div id="map"></div>
+      </div>
+      <div class="card panel side" id="side" aria-live="polite"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head"><div><h2 id="sc-title"></h2><p id="sc-sub"></p></div></div>
+      <div class="chart scatter" id="sc"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle kommuner</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Arbeidssted og bosted</h3><p>Tallene viser hvor jobbene er (arbeidssted). Kommuner med mange flere jobber enn sysselsatte innbyggere har innpendling – typisk regionsentre og industristeder.</p></div>
+      <div><h3>Hvorfor næring betyr noe for skatten</h3><p>Lønnsskatt følger bostedet, men arbeidsgiveravgift følger arbeidsstedet, og selskapsskatt føres der selskapet er hjemmehørende. Lønnsomme havbruks-, kraft- og industriselskaper kan derfor gi høy skatteinngang i små kommuner.</p></div>
+      <div><h3>Om tallene</h3><p>SSB tabell 13470, sysselsatte per 4. kvartal 2008–siste år, etter næring (SN2007). Antall er omregnet til dagens kommuner. Skatt per innbygger er hentet fra Skattekartet (SSB 07022).</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Statistisk sentralbyrå, tabell <a href="https://www.ssb.no/statbank/table/13470/">13470</a> og 07022 · Kart: Kartverket (CC BY 4.0)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/naering.js"></script>
+</body>
+</html>
