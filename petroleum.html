@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Petroleumsskatten · Skatt i tall</title>
+  <meta name="description" content="Utviklingen i petroleumsskatten og dens andel av skatteinngangen, basert på SSB tabell 07391.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .page-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 48px; align-items: end; padding: 36px 0 22px; }
+    .page-head h1 { font-size: clamp(32px, 4.5vw, 48px); margin-top: 6px; }
+    .page-head p { margin: 10px 0 0; max-width: 70ch; }
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .kpi { padding: 18px 20px; }
+    .kpi .l { font-size: 13px; color: var(--text-2); }
+    .kpi .v { font-size: 30px; font-weight: 650; letter-spacing: -.025em; margin: 6px 0 2px; }
+    .kpi .s { font-size: 13px; color: var(--text-3); }
+    .kpi .delta { font-weight: 600; color: var(--text-2); }
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 20px; }
+    .panel { padding: 22px 22px 18px; margin-top: 20px; }
+    .grid2 .panel { margin-top: 0; }
+    .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+    .panel-head h2 { font-size: 18px; font-weight: 650; }
+    .panel-head p { margin: 4px 0 0; color: var(--text-3); font-size: 13px; max-width: 70ch; }
+    .panel .legend { margin-bottom: 8px; }
+    .chart .annot text { fill: var(--text-3); font-size: 11.5px; }
+    .chart .annot line { stroke: var(--text-3); stroke-dasharray: 2 3; }
+    .chart .dlabel { fill: var(--text-2); font-size: 12px; font-weight: 600; }
+    .chart .hit { fill: transparent; cursor: default; }
+    .chart .bar-hl { fill: var(--text); opacity: .06; pointer-events: none; }
+    .story { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 36px; margin-top: 44px; }
+    .story h3 { font-size: 15px; margin-bottom: 6px; }
+    .story p { margin: 0; color: var(--text-2); font-size: 14px; }
+    @media (max-width: 1000px) {
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid2, .story { grid-template-columns: 1fr; }
+      .page-head { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } .kpi .v { font-size: 26px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Skatt i tall</span>
+      </a>
+      <nav class="nav" aria-label="Studier">
+        <a href="./">Oversikt</a>
+        <a href="kart.html">Skattekartet</a>
+        <a href="petroleum.html" aria-current="page">Petroleumsskatten</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 2</span>
+        <h1 class="display">Petroleumsskatten</h1>
+        <p class="muted">Petroleumsskatt er her summen av <b>ordinær skatt</b> og <b>særskatt</b> på utvinning av petroleum. Hvor mye har den gitt over tid – og hvor stor del utgjør den av skatten fra selskaper (upersonlige skattytere) og av all skatt?</p>
+      </div>
+      <div class="field">
+        <span class="label" id="kr-label">Kroneverdi</span>
+        <div class="seg" role="group" aria-labelledby="kr-label" id="real">
+          <button data-v="nom" aria-pressed="true">Løpende kroner</button>
+          <button data-v="real" aria-pressed="false" id="real-btn">Faste kroner</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div>
+          <h2 id="c1-title">Petroleumsskatt per år</h2>
+          <p id="c1-sub"></p>
+        </div>
+      </div>
+      <div class="legend" id="c1-legend"></div>
+      <div class="chart" id="c1"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <h2>Andel av skatteinngangen</h2>
+            <p>Petroleumsskattens andel av skatt fra upersonlige skattytere og av all fordelt skatt.</p>
+          </div>
+        </div>
+        <div class="legend" id="c2-legend"></div>
+        <div class="chart" id="c2"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <h2>Gjennom året</h2>
+            <p>Akkumulert petroleumsskatt måned for måned. Skatten betales i terminer, derfor trappeformen.</p>
+          </div>
+        </div>
+        <div class="legend" id="c4-legend"></div>
+        <div class="chart" id="c4"></div>
+      </section>
+    </div>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div>
+          <h2 id="c3-title">Hvor kommer skatten fra?</h2>
+          <p>All fordelt skatt fordelt på petroleumsskatt, annen skatt fra upersonlige skattytere (bl.a. selskapsskatt) og skatt fra personlige skattytere inkludert arbeidsgiveravgift. Renter m.m. er utelatt.</p>
+        </div>
+      </div>
+      <div class="legend" id="c3-legend"></div>
+      <div class="chart" id="c3"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div>
+          <h2>Tabell</h2>
+          <p id="tbl-sub">Mill. kr. Klikk på en kolonne for å sortere.</p>
+        </div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Hva er petroleumsskatt?</h3><p>Selskaper som utvinner olje og gass på sokkelen betaler ordinær selskapsskatt (22 %) og en særskatt (71,8 % fra 2022, tidligere 56 %). Samlet marginalskatt er 78 %. Skatten betales i terminer, delvis året etter at inntekten er opptjent.</p></div>
+      <div><h3>Svingninger</h3><p>Inntektene følger olje- og gassprisene. Oljeprisfallet i 2014–2016 og pandemien i 2020 ga lave år, mens de ekstreme gassprisene etter Russlands invasjon av Ukraina ga rekordinntekter i 2022–2023.</p></div>
+      <div><h3>Om tallene</h3><p>Kilde er SSBs skatteregnskap (tabell 07391), akkumulert per desember. Faste kroner er justert med konsumprisindeksen (tabell 03014) til siste hele års kroneverdi. Inneværende år vises som «hittil i år».</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Statistisk sentralbyrå, tabell <a href="https://www.ssb.no/statbank/table/07391/">07391</a> og <a href="https://www.ssb.no/statbank/table/03014/">03014</a></span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/petroleum.js"></script>
+</body>
+</html>
