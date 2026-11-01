@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Befolkningsutviklingen · Skatt i tall</title>
+  <meta name="description" content="Fødselsoverskudd, innvandring etter opprinnelsesland og utvandring etter land – for Norge og hver kommune.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <link rel="stylesheet" href="assets/choro.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; padding: 16px 18px; margin-top: 16px; position: sticky; top: 61px; z-index: 30; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+    .chip .sw { width: 10px; height: 10px; border-radius: 3px; }
+    .chip button { border: 0; background: none; cursor: pointer; color: var(--text-3); width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; }
+    .chip button:hover { background: var(--surface-2); color: var(--text); }
+    .add { display: flex; gap: 8px; align-items: center; }
+    .add .input { width: 220px; }
+    .reg-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .reg-filter button { border: 1px solid var(--border); background: var(--surface); padding: 4px 10px; border-radius: 999px; font-size: 12.5px; cursor: pointer; color: var(--text-2); display: inline-flex; gap: 6px; align-items: center; }
+    .reg-filter button .sw { width: 9px; height: 9px; border-radius: 2px; }
+    .reg-filter button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .hbar .name { fill: var(--text-2); font-size: 12.5px; }
+    .hbar .val { fill: var(--text); font-size: 12.5px; font-weight: 600; }
+    .hbar .chg { fill: var(--text-3); font-size: 11.5px; }
+    .hbar .row:hover .name { fill: var(--text); }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+    .kgrid .choro { height: 640px; border-radius: 12px; }
+    .decomp { display: flex; flex-direction: column; gap: 10px; }
+    .decomp h3 { font-size: 26px; margin: 0; }
+    .comp-row { display: grid; grid-template-columns: 170px minmax(0, 1fr) 90px; gap: 10px; align-items: center; font-size: 13.5px; }
+    .comp-row .n { color: var(--text-2); }
+    .comp-row .v { text-align: right; font-weight: 600; }
+    .comp-row .track { position: relative; height: 14px; }
+    .comp-row .track .zero { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--border-strong); }
+    .comp-row .track .bar { position: absolute; top: 0; height: 14px; border-radius: 3px; }
+    .comp-row.total { border-top: 1px solid var(--border); padding-top: 10px; font-weight: 600; }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } .kgrid .choro { height: 70vh; } }
+    @media (max-width: 720px) { .controls { position: static; } .controls .field, .add .input { width: 100%; } .controls .seg { width: 100%; flex-wrap: wrap; } .controls .seg button { flex: 1; } .comp-row { grid-template-columns: 120px minmax(0, 1fr) 70px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+  <script src="assets/choro.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Skatt i tall</span>
+      </a>
+      <nav class="nav" aria-label="Studier">
+        <a href="./">Oversikt</a>
+        <a href="kart.html">Skattekartet</a>
+        <a href="petroleum.html">Petroleumsskatten</a>
+        <a href="formue.html">Formuesskatten</a>
+        <a href="profil.html">Kommuneprofilen</a>
+        <a href="alder.html">Aldersbølgen</a>
+        <a href="befolkning.html" aria-current="page">Befolkningen</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 6</span>
+        <h1 class="display">Befolkningsutviklingen</h1>
+        <p class="muted">Befolkningen vokser når det fødes flere enn det dør, og når flere flytter inn enn ut. Hvor mye av veksten kommer fra fødselsoverskudd og hvor mye fra innvandring – hvilke land kommer innvandrerne fra, hvor reiser utvandrerne, og hvordan ser det ut i din kommune?</p>
+      </div>
+      <div class="field">
+        <span class="label" id="per-label">Periode</span>
+        <div class="seg" role="group" aria-labelledby="per-label" id="period">
+          <button data-v="1900" aria-pressed="false">1900–</button>
+          <button data-v="1951" aria-pressed="true">1951–</button>
+          <button data-v="2000" aria-pressed="false">2000–</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Hva driver befolkningsveksten?</h2><p>Fødselsoverskudd (fødte minus døde) og nettoinnvandring (innvandring minus utvandring) per år. Prikkene viser samlet vekst.</p></div>
+      </div>
+      <div class="legend" id="c1-legend"></div>
+      <div class="chart" id="c1"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Fødte og døde</h2><p>Antall per år.</p></div></div>
+        <div class="legend" id="c2-legend"></div>
+        <div class="chart" id="c2"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Innvandring og utvandring</h2><p>Antall flyttinger til og fra utlandet per år.</p></div></div>
+        <div class="legend" id="c3-legend"></div>
+        <div class="chart" id="c3"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Hvor kommer de fra – og hvor reiser de?</h2>
+    <p class="section-lead">Inn- og utvandring fordelt på land. «Statsborgerskap» viser hvilket land personene er borgere av (2003–). «Fra-/tilflyttingsland» viser hvilket land de flyttet fra eller til (1967–).</p>
+
+    <section class="card controls" aria-label="Valg for land">
+      <div class="field">
+        <span class="label" id="dir-label">Vis</span>
+        <div class="seg" role="group" aria-labelledby="dir-label" id="dir">
+          <button data-v="inn" aria-pressed="true">Innvandring</button>
+          <button data-v="ut" aria-pressed="false">Utvandring</button>
+          <button data-v="net" aria-pressed="false">Netto</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="dim-label">Etter</span>
+        <div class="seg" role="group" aria-labelledby="dim-label" id="dim">
+          <button data-v="citizenship" aria-pressed="true">Statsborgerskap</button>
+          <button data-v="country" aria-pressed="false">Fra-/tilflyttingsland</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="lyear">År for rangering</label>
+        <select id="lyear" class="select"></select>
+      </div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head"><div><h2 id="c4-title"></h2><p id="c4-sub"></p></div></div>
+      <div class="legend" id="c4-legend"></div>
+      <div class="chart" id="c4"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2 id="c5-title">Land over tid</h2><p>Velg opptil fem land. Klikk på et land i listen til høyre for å legge det til.</p></div></div>
+        <div class="chips" id="chips"></div>
+        <div class="add" style="margin:10px 0 6px">
+          <input class="input" id="addc" type="search" list="clist" placeholder="Legg til land …" autocomplete="off"><datalist id="clist"></datalist>
+          <button class="btn ghost" id="resetc">Tilbakestill</button>
+        </div>
+        <div class="chart" id="c5"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2 id="c6-title"></h2><p id="c6-sub"></p></div></div>
+        <div class="reg-filter" id="regf"></div>
+        <div class="chart" id="c6"></div>
+      </section>
+    </div>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle land</h2><p id="ctbl-sub"></p></div>
+        <button class="btn" id="csv-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="ctable"></div>
+    </section>
+
+    <h2 class="display section-title">Kommunene</h2>
+    <p class="section-lead">Hvorfor vokser – eller krymper – kommunen? Befolkningsendringen deles i fødselsoverskudd, nettoinnvandring fra utlandet og netto flytting innenlands. Alle tall er omregnet til dagens kommuner.</p>
+
+    <section class="card controls" aria-label="Valg for kommuner" style="position:static">
+      <div class="field"><label for="kfrom">Fra og med</label><select id="kfrom" class="select"></select></div>
+      <div class="field"><label for="kto">Til og med</label><select id="kto" class="select"></select></div>
+      <div class="field">
+        <span class="label" id="comp-label">Kartet viser</span>
+        <div class="seg" role="group" aria-labelledby="comp-label" id="comp">
+          <button data-v="tot" aria-pressed="true">Samlet vekst</button>
+          <button data-v="fo" aria-pressed="false">Fødselsoverskudd</button>
+          <button data-v="ni" aria-pressed="false">Innvandring (netto)</button>
+          <button data-v="nf" aria-pressed="false">Innenlands flytting</button>
+        </div>
+      </div>
+      <div class="field"><label for="kfylke">Fylke</label><select id="kfylke" class="select"><option value="">Hele landet</option></select></div>
+    </section>
+
+    <section class="card panel">
+      <div class="kgrid">
+        <div>
+          <div class="panel-head"><div><h2 id="kmap-title"></h2><p>Per 1 000 innbyggere ved periodens start. Blått er vekst, rødt er nedgang. Klikk på en kommune.</p></div></div>
+          <div id="kmap"></div>
+        </div>
+        <div class="decomp" id="decomp" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle kommuner</h2><p id="ktbl-sub"></p></div>
+        <button class="btn" id="csv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="ktable"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Begreper</h3><p><b>Fødselsoverskudd</b> er levendefødte minus døde. <b>Nettoinnvandring</b> er innvandring minus utvandring. <b>Innenlands flytting</b> er flytting mellom kommuner i Norge – den summerer seg til null for landet.</p></div>
+      <div><h3>Statsborgerskap eller land?</h3><p>En nordmann som flytter hjem fra Spania teller som innvandring fra Spania etter fraflyttingsland, men som norsk statsborger etter statsborgerskap. Derfor er «Norge» en stor gruppe i statsborgerskapsvisningen.</p></div>
+      <div><h3>Om tallene</h3><p>SSB tabell 05803 (hele landet fra 1900), 05476 (statsborgerskap), 07822 (fra-/tilflyttingsland), 06913 og 13256 (kommuner fra 2010). Flyttinger registreres når de meldes til Folkeregisteret; utvandring kan bli registrert sent eller ikke i det hele tatt.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Statistisk sentralbyrå, tabell 05803, 05476, 07822, 06913 og 13256 · Kart: Kartverket (CC BY 4.0)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/befolkning.js"></script>
+</body>
+</html>
