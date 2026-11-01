@@ -78,7 +78,7 @@
   // ---- Diagram 1: stablede søyler ordinær + særskatt ----
   function chart1() {
     const el = document.getElementById("c1");
-    const w = Math.max(640, el.clientWidth || 1000), h = 380, m = { t: 30, r: 10, b: 30, l: 62 };
+    const w = Math.max(360, el.clientWidth || 1000), h = 380, m = { t: 30, r: 10, b: 30, l: 62 };
     const svg = frame(el, w, h, m);
     const keys = [{ k: "ord", name: "Ordinær skatt på utvinning", color: "var(--series-1)" }, { k: "sær", name: "Særskatt på utvinning", color: "var(--series-2)" }];
     legend("c1-legend", [...keys, ...(ytd ? [{ name: `${lastYear}: hittil i år (jan–${S.MONTHS_SHORT[lastMonth - 1]})`, color: "var(--neutral-mark)", pattern: true }] : [])]);
@@ -217,7 +217,7 @@
   // ---- Diagram 3: sammensetning av all skatt ----
   function chart3() {
     const el = document.getElementById("c3");
-    const w = Math.max(640, el.clientWidth || 1000), h = 360, m = { t: 16, r: 10, b: 30, l: 62 };
+    const w = Math.max(360, el.clientWidth || 1000), h = 360, m = { t: 16, r: 10, b: 30, l: 62 };
     const svg = frame(el, w, h, m);
     const keys = [
       { k: "petro", name: "Petroleumsskatt", color: "var(--series-1)" },

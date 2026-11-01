@@ -284,6 +284,112 @@ def main():
         json.dump(out2, fh, ensure_ascii=False, separators=(",", ":"))
     print("skrev data/skatt-ordning.json", file=sys.stderr)
 
+    build_formue(harmonize_code, kommuner, pop, [r for r in pop_js.cats("Region") if len(r) == 4],
+                 {k: clean_name(reg_labels[k]) for k in kommuner}, {f: clean_name(reg_labels[f]) for f in fylker})
+
+
+def build_formue(harmonize_code, kommuner, pop, pop_codes, kom_names, fylke_names):
+    """Formuesskatt (10333, 08231) og utvandring av norske statsborgere (09201)."""
+    # ---- formuesskatt per region og år ----
+    c = Cube(query("10333", {"Region": "*", "ContentsCode": "*", "Tid": "*"}))
+    years = [int(t) for t in c.cats("Tid")]
+    contents = ["Personer", "FormuesskattKomm", "FormuesskattStat", "SkatteplNettoformue"]
+
+    def g(r, k, y):
+        try:
+            return c.get(Region=r, ContentsCode=k, Tid=str(y))
+        except KeyError:
+            return None
+
+    national = {k: [g("0", k, y) for y in years] for k in contents}
+    kyears = [y for y in years if y >= 2007]
+    agg = {k: {ct: [0.0] * len(kyears) for ct in contents} for k in kommuner}
+    kpop = {k: [0.0] * len(kyears) for k in kommuner}
+    for yi, y in enumerate(kyears):
+        for r in c.cats("Region"):
+            if len(r) != 4 or r.endswith("99") or r[:2] in ("21", "23", "24"):
+                continue
+            vals = {ct: g(r, ct, y) for ct in contents}
+            if all(v in (None, 0) for v in vals.values()):
+                continue
+            for t, w in harmonize_code(r, y).items():
+                if t not in agg:
+                    continue
+                for ct, v in vals.items():
+                    if v is not None:
+                        agg[t][ct][yi] += v * w
+    # Folketall per 1.1. året etter (formuen måles 31.12. i inntektsåret),
+    # harmonisert til dagens kommuner på samme måte som skattetallene.
+    for yi, y in enumerate(kyears):
+        py = y + 1
+        for r in pop_codes:
+            p = pop(r, py)
+            if not p:
+                continue
+            for t, w in harmonize_code(r, py).items():
+                if t in kpop:
+                    kpop[t][yi] += p * w
+    kom_out = {}
+    for k in kommuner:
+        a = agg[k]
+        kom_out[k] = {
+            "name": kom_names[k],
+            "f": k[:2],
+            "n": [round(x) for x in a["Personer"]],
+            # 1 000 kr -> mill. kr
+            "kom": [round(x / 1000, 2) for x in a["FormuesskattKomm"]],
+            "stat": [round(x / 1000, 2) for x in a["FormuesskattStat"]],
+            "formue": [round(x / 1000) for x in a["SkatteplNettoformue"]],
+            "pop": [round(x) for x in kpop[k]],
+        }
+
+    # ---- fordeling etter størrelse på formuesskatten ----
+    b = Cube(query("08231", {"FormuesSkatt1": "*", "ContentsCode": ["AntallPers", "GjennomsnittFormSkat"], "Tid": "*"}))
+    byears = [int(t) for t in b.cats("Tid")]
+    brackets = []
+    for code in b.cats("FormuesSkatt1"):
+        if code in ("01", "02"):
+            continue
+        brackets.append({
+            "code": code,
+            "name": b.label["FormuesSkatt1"][code],
+            "n": [b.get(FormuesSkatt1=code, ContentsCode="AntallPers", Tid=str(y)) for y in byears],
+            "avg": [b.get(FormuesSkatt1=code, ContentsCode="GjennomsnittFormSkat", Tid=str(y)) for y in byears],
+        })
+
+    # ---- utvandring av norske statsborgere etter land ----
+    e = Cube(query("09201", {"Land": "*", "Statsbrgskap": ["000"], "ContentsCode": ["Utvandring"], "Tid": "*"}))
+    eyears = [int(t) for t in e.cats("Tid")]
+    countries = {}
+    total = [0] * len(eyears)
+    for land in e.cats("Land"):
+        vals = [e.get(Land=land, Statsbrgskap="000", ContentsCode="Utvandring", Tid=str(y)) or 0 for y in eyears]
+        total = [a + v for a, v in zip(total, vals)]
+        if sum(vals) >= 150 and land not in ("990",):
+            countries[land] = {"name": e.label["Land"][land], "v": vals}
+
+    out = {
+        "source": "SSB tabell 10333, 08231 og 09201",
+        "updated": max(filter(None, [c.updated, b.updated, e.updated])),
+        "years": years,
+        "national": {
+            "n": national["Personer"],
+            "kom": [None if v is None else round(v / 1000, 1) for v in national["FormuesskattKomm"]],
+            "stat": [None if v is None else round(v / 1000, 1) for v in national["FormuesskattStat"]],
+            "formue": [None if v is None else round(v / 1000) for v in national["SkatteplNettoformue"]],
+        },
+        "kyears": kyears,
+        "kommuner": kom_out,
+        "fylker": fylke_names,
+        "byears": byears,
+        "brackets": brackets,
+        "eyears": eyears,
+        "emigration": {"total": total, "countries": countries},
+    }
+    with open(os.path.join(DATA, "formue.json"), "w", encoding="utf-8") as fh:
+        json.dump(out, fh, ensure_ascii=False, separators=(",", ":"))
+    print("skrev data/formue.json", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()

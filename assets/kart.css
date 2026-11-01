@@ -12,10 +12,10 @@
 .search-field { margin-left: auto; }
 .search { position: relative; }
 .search svg { position: absolute; left: 11px; top: 11px; width: 16px; height: 16px; color: var(--text-3); pointer-events: none; }
-.search .input { padding-left: 34px; width: 240px; }
+.search .input { padding-left: 34px; width: 200px; }
 
 .dropdown { position: relative; }
-.arts-btn { text-align: left; min-width: 250px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arts-btn { text-align: left; min-width: 210px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .popover { position: absolute; top: calc(100% + 6px); left: 0; width: 360px; padding: 14px; z-index: 60; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
 .presets button { border: 1px solid var(--border); background: var(--surface); padding: 4px 10px; border-radius: 999px; font-size: 13px; cursor: pointer; color: var(--text-2); }
@@ -38,6 +38,12 @@
 #map:active { cursor: grabbing; }
 #map .region { stroke: var(--map-stroke); stroke-width: .5; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .35s ease; }
 #map .region.dim { opacity: .25; }
+#map .region.out { pointer-events: none; }
+#map .fylke-focus { fill: none; stroke: var(--text); stroke-width: 1.5; stroke-opacity: .7; vector-effect: non-scaling-stroke; pointer-events: none; }
+.toolbar #fylke { width: 190px; }
+@media (max-width: 720px) { .toolbar #fylke { width: 100%; } }
+.btn-row { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 16px; }
+.btn-row .btn { padding-left: 0; }
 #map .fylke-border { fill: none; stroke: var(--map-fylke); stroke-width: 1; stroke-opacity: .55; vector-effect: non-scaling-stroke; pointer-events: none; }
 #map .hover-outline { fill: none; stroke: var(--text); stroke-width: 1.5; vector-effect: non-scaling-stroke; pointer-events: none; }
 #map .sel-outline { fill: none; stroke: var(--text); stroke-width: 2.5; vector-effect: non-scaling-stroke; pointer-events: none; }

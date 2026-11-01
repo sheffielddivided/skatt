@@ -48,10 +48,22 @@
   const fylker = data.fylker;
   const fylkeName = (f) => (fylker[f] ? fylker[f].name : f);
 
-  function regionsFor(level) { return level === "f" ? fylker : kommuner; }
+  const kommunerIFylke = {};
+  for (const [id, r] of Object.entries(kommuner)) (kommunerIFylke[r.f] ||= {})[id] = r;
+  function regionsFor(level) {
+    if (level === "f") return fylker;
+    return state.fy && kommunerIFylke[state.fy] ? kommunerIFylke[state.fy] : kommuner;
+  }
+  function nationalRank(id) {
+    const v = metric(kommuner[id]);
+    if (v == null) return null;
+    let rank = 1, n = 0;
+    for (const r of Object.values(kommuner)) { const x = metric(r); if (x == null) continue; n++; if (x > v) rank++; }
+    return { rank, n };
+  }
 
   // ------------------------------------------------------------------ state
-  const state = { yi: LAST - (partial ? 1 : 0), level: "k", metric: "pc", arts: ["00"], sel: null };
+  const state = { yi: LAST - (partial ? 1 : 0), level: "k", metric: "pc", arts: ["00"], sel: null, fy: null };
   readHash();
 
   function artValue(r, yi) {
@@ -124,11 +136,13 @@
     if (["tot", "pc", "chg"].includes(h.get("m"))) state.metric = h.get("m");
     const a = (h.get("a") || "").split(",").filter((x) => x in ART_INDEX);
     if (a.length) state.arts = a.includes("00") ? ["00"] : a;
+    if (h.get("fy") && fylker[h.get("fy")]) state.fy = h.get("fy");
     const r = h.get("r");
     if (r && regionsFor(state.level)[r]) state.sel = r;
   }
   function writeHash() {
     const h = new URLSearchParams({ y: YEARS[state.yi], l: state.level, m: state.metric, a: state.arts.join(",") });
+    if (state.fy) h.set("fy", state.fy);
     if (state.sel) h.set("r", state.sel);
     history.replaceState(null, "", "#" + h.toString());
   }
@@ -143,11 +157,31 @@
     el.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
       if (state[key] === b.dataset.v) return;
       state[key] = b.dataset.v;
-      if (key === "level") { state.sel = null; drawLayers(); }
+      if (key === "level") {
+        state.sel = null;
+        drawLayers();
+        if (state.level === "f" && state.fy) { state.sel = state.fy; }
+        else if (state.level === "k" && state.fy) zoomTo(featById["f" + state.fy], 0.82);
+      }
       update();
     }));
   }
   bindSeg("level", "level");
+
+  // Fylkesfilter
+  const fylkeSel = document.getElementById("fylke");
+  fylkeSel.innerHTML += Object.entries(fylker).sort((a, b) => a[1].name.localeCompare(b[1].name, "nb"))
+    .map(([id, f]) => `<option value="${id}">${S.escapeHtml(f.name)}</option>`).join("");
+  fylkeSel.addEventListener("change", () => setFylke(fylkeSel.value || null));
+  function setFylke(fy, keepSel = false) {
+    stopPlay();
+    state.fy = fy;
+    if (state.level !== "k") { state.level = "k"; drawLayers(); }
+    if (!keepSel || (state.sel && fy && kommuner[state.sel]?.f !== fy)) state.sel = null;
+    update();
+    if (fy) zoomTo(featById["f" + fy], 0.82);
+    else svg.transition().duration(600).call(zoom.transform, d3.zoomIdentity);
+  }
   bindSeg("metric", "metric");
 
   // Skattearter
@@ -190,6 +224,7 @@
       allRegions.find((r) => r.label.toLowerCase().startsWith(v)) ||
       allRegions.find((r) => r.label.toLowerCase().includes(v));
     if (!hit) return;
+    if (hit.level === "k" && state.fy && kommuner[hit.id].f !== state.fy) state.fy = null;
     if (hit.level !== state.level) { state.level = hit.level; drawLayers(); }
     select(hit.id, true);
     search.value = "";
@@ -238,9 +273,9 @@
   document.getElementById("zoom-out").onclick = () => svg.transition().duration(300).call(zoom.scaleBy, 1 / 1.8);
   document.getElementById("zoom-reset").onclick = () => svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
 
-  function zoomTo(feature) {
+  function zoomTo(feature, fill = 0.5) {
     const [[x0, y0], [x1, y1]] = path.bounds(feature);
-    const k = Math.min(10, 0.5 / Math.max((x1 - x0) / W, (y1 - y0) / H));
+    const k = Math.min(10, fill / Math.max((x1 - x0) / W, (y1 - y0) / H));
     const t = d3.zoomIdentity.translate(W / 2, H / 2).scale(Math.max(1, k)).translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
     svg.transition().duration(750).call(zoom.transform, t);
   }
@@ -301,7 +336,9 @@
     const i = ranking.indexOf(id);
     return i < 0 ? null : { rank: i + 1, n: ranking.length };
   }
+  function isOut(id) { return state.level === "k" && state.fy && kommuner[id]?.f !== state.fy; }
   function colorOf(id) {
+    if (isOut(id)) return "var(--map-out)";
     const v = values[id];
     return v == null || !isFinite(v) ? "var(--map-empty)" : scale(v);
   }
@@ -364,6 +401,7 @@
     const v = metric(r), tot = artValue(r, yi), pc = perCap(r, yi), chg = change(r, yi);
     const rk = rankOf(id);
     const isK = state.level === "k";
+    const nrk = isK && state.fy ? nationalRank(id) : null;
     const ratio = pc != null && nat.pc ? (pc / nat.pc - 1) * 100 : null;
     const fyl = isK ? fylker[r.f] : null;
     const shareF = isK && fyl ? (artValue(r, yi) / artValue(fyl, yi)) * 100 : null;
@@ -388,7 +426,8 @@
       <div class="hero-num">${fmtMetric(v)}</div>
       <div class="hero-cap">${S.escapeHtml(artsLabel())} · ${metricShort().toLowerCase()}</div>
       <div class="cmp">
-        ${rk ? `<span class="pill accent">Nr. ${rk.rank} av ${rk.n}</span>` : ""}
+        ${rk ? `<span class="pill accent">Nr. ${rk.rank} av ${rk.n}${nrk ? ` i ${S.escapeHtml(fylkeName(state.fy))}` : ""}</span>` : ""}
+        ${nrk ? `<span class="pill">Nr. ${nrk.rank} av ${nrk.n} i landet</span>` : ""}
         ${ratio != null && state.metric !== "chg" ? `<span class="pill">${S.pct(ratio, 0, true)} mot landssnittet per innb.</span>` : ""}
         ${state.metric === "chg" && nat.chg != null ? `<span class="pill">Landet: ${S.pct(nat.chg, 1, true)}</span>` : ""}
       </div>
@@ -415,15 +454,21 @@
           <div class="track"><div class="fill" style="width:${Math.max(0, (100 * p.v) / maxPart)}%"></div></div>
         </div>`).join("")}
       </div>
-      ${isK ? `<button class="btn ghost" id="to-fylke" style="margin-top:18px;padding-left:0">Vis ${S.escapeHtml(fylkeName(r.f))} →</button>` : ""}
+      <div class="btn-row">
+        ${isK && !state.fy ? `<button class="btn ghost" id="filter-fylke">Vis kommunene i ${S.escapeHtml(fylkeName(r.f))} →</button>` : ""}
+        ${isK ? `<button class="btn ghost" id="to-fylke">Se fylket samlet →</button>` : `<button class="btn ghost" id="filter-fylke">Vis kommunene i ${S.escapeHtml(r.name)} →</button>`}
+      </div>
     `;
     panel.querySelector(".close").onclick = () => select(null);
     const tf = panel.querySelector("#to-fylke");
     if (tf) tf.onclick = () => { state.level = "f"; drawLayers(); select(r.f); update(); };
+    const ff = panel.querySelector("#filter-fylke");
+    if (ff) ff.onclick = () => setFylke(isK ? r.f : id, isK);
     drawTimeSeries(r);
   }
 
   function renderOverview(nat) {
+    if (state.level === "k" && state.fy) return renderFylkeOverview(nat);
     const yi = state.yi;
     const isK = state.level === "k";
     const top = ranking.slice(0, isK ? 8 : 5), bot = ranking.slice(-(isK ? 8 : 5)).reverse();
@@ -462,6 +507,48 @@
       </div>
       <div class="hint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 9l10 4-4 2-2 4z"/><path d="M5 3v4M3 5h4"/></svg>Klikk på ${isK ? "en kommune" : "et fylke"} i kartet for detaljer.</div>
     `;
+    panel.querySelectorAll(".rank-list button").forEach((b) => b.addEventListener("click", () => select(b.dataset.id, true)));
+  }
+
+  function renderFylkeOverview(nat) {
+    const yi = state.yi, fid = state.fy, f = fylker[fid];
+    const n = ranking.length;
+    const k = n <= 12 ? n : 6;
+    const top = ranking.slice(0, k), bot = n <= 12 ? [] : ranking.slice(-k).reverse();
+    const regs = regionsFor("k");
+    const li = (id) => `<li><button data-id="${id}"><span class="r">${ranking.indexOf(id) + 1}</span><span class="n">${S.escapeHtml(regs[id].name)}</span><span class="v">${fmtMetric(values[id])}</span></button></li>`;
+    const tot = artValue(f, yi), pc = perCap(f, yi), chg = change(f, yi);
+    const ratio = pc != null ? (pc / nat.pc - 1) * 100 : null;
+    const frank = (() => { const vs = Object.entries(fylker).map(([i, x]) => [i, metric(x)]).filter((e) => e[1] != null).sort((a, b) => b[1] - a[1]); const i = vs.findIndex((e) => e[0] === fid); return i < 0 ? null : { rank: i + 1, n: vs.length }; })();
+    panel.innerHTML = `
+      <div class="p-head">
+        <div>
+          <span class="eyebrow">Fylke · ${yearLabel(yi)}</span>
+          <h2 class="display">${S.escapeHtml(f.name)}</h2>
+          <div class="sub">${n} kommuner · ${S.escapeHtml(artsLabel())}</div>
+        </div>
+        <button class="icon-btn close" aria-label="Fjern fylkesfilteret og vis hele landet" title="Vis hele landet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <div class="hero-num">${fmtMetric(metric(f))}</div>
+      <div class="hero-cap">${metricShort()} for fylket samlet</div>
+      <div class="cmp">
+        ${frank ? `<span class="pill accent">Nr. ${frank.rank} av ${frank.n} fylker</span>` : ""}
+        ${ratio != null && state.metric !== "chg" ? `<span class="pill">${S.pct(ratio, 0, true)} mot landssnittet per innb.</span>` : ""}
+      </div>
+      <div class="kv" style="margin-top:16px">
+        <div><div class="k">Skatteinngang</div><div class="v">${S.mill(tot)}</div></div>
+        <div><div class="k">Per innbygger</div><div class="v">${S.kr(pc && Math.round(pc))}</div></div>
+        <div><div class="k">Endring fra ${prevLabel(yi)}</div><div class="v">${S.pct(chg, 1, true)}</div></div>
+        <div><div class="k">Andel av landet</div><div class="v">${S.pct((100 * tot) / nat.v, 1)}</div></div>
+      </div>
+      <h3>${bot.length ? "Høyest" : "Kommunene rangert etter"} ${metricShort().toLowerCase()}</h3>
+      <ol class="rank-list">${top.map(li).join("")}</ol>
+      ${bot.length ? `<h3>Lavest ${metricShort().toLowerCase()}</h3><ol class="rank-list">${bot.map(li).join("")}</ol>` : ""}
+      <div class="btn-row"><button class="btn ghost" id="clear-fylke">← Vis hele landet</button></div>
+      <div class="hint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 9l10 4-4 2-2 4z"/><path d="M5 3v4M3 5h4"/></svg>Fargene er tilpasset kommunene i fylket.</div>
+    `;
+    panel.querySelector(".close").onclick = () => setFylke(null);
+    panel.querySelector("#clear-fylke").onclick = () => setFylke(null);
     panel.querySelectorAll(".rank-list button").forEach((b) => b.addEventListener("click", () => select(b.dataset.id, true)));
   }
 
@@ -523,10 +610,10 @@
       id, name: r.name, fylke: isK ? fylkeName(r.f) : "", pop: r.pop[yi], tot: artValue(r, yi), pc: perCap(r, yi), chg: change(r, yi),
       rank: rankOf(id)?.rank ?? null,
     }));
-    document.getElementById("table-title").textContent = `${isK ? "Alle kommuner" : "Alle fylker"} · ${yearLabel(yi)} · ${artsLabel()}`;
+    document.getElementById("table-title").textContent = `${isK ? (state.fy ? `Kommuner i ${fylkeName(state.fy)}` : "Alle kommuner") : "Alle fylker"} · ${yearLabel(yi)} · ${artsLabel()}`;
     const cols = [
       { key: "name", label: isK ? "Kommune" : "Fylke", text: true },
-      ...(isK ? [{ key: "fylke", label: "Fylke", text: true }] : []),
+      ...(isK && !state.fy ? [{ key: "fylke", label: "Fylke", text: true }] : []),
       { key: "pop", label: "Innbyggere", fmt: S.int },
       { key: "tot", label: "Skatteinngang", fmt: (v) => S.mill(v) },
       { key: "pc", label: "Per innbygger", fmt: (v) => S.kr(v && Math.round(v)) },
@@ -564,12 +651,15 @@
   function update() {
     syncControls();
     computeScale();
-    regionSel.attr("fill", (d) => colorOf(d.properties.id)).classed("dim", false);
+    regionSel.attr("fill", (d) => colorOf(d.properties.id)).classed("dim", false).classed("out", (d) => isOut(d.properties.id));
+    gBorders.selectAll(".fylke-focus").remove();
+    if (state.level === "k" && state.fy) gBorders.append("path").attr("class", "fylke-focus").attr("d", path(featById["f" + state.fy]));
+    fylkeSel.value = state.level === "k" && state.fy ? state.fy : "";
     drawSelection();
     drawLegend();
     const t = state.metric === "pc" ? "per innbygger" : state.metric === "tot" ? "totalt" : `– endring fra ${prevLabel(state.yi)}`;
     document.getElementById("map-title").textContent = `${artsLabel()} ${t}`;
-    document.getElementById("map-sub").textContent = `${state.level === "k" ? "Kommuner" : "Fylker"} · ${yearLabel(state.yi)}${partial && state.yi === LAST ? " (hittil i år)" : ""}`;
+    document.getElementById("map-sub").textContent = `${state.level === "k" ? (state.fy ? `Kommuner i ${fylkeName(state.fy)}` : "Kommuner") : "Fylker"} · ${yearLabel(state.yi)}${partial && state.yi === LAST ? " (hittil i år)" : ""}`;
     renderPanel();
     renderTable();
     writeHash();
@@ -578,6 +668,7 @@
   drawLayers();
   update();
   if (state.sel) setTimeout(() => zoomTo(featById[state.level + state.sel]), 50);
+  else if (state.level === "k" && state.fy) setTimeout(() => zoomTo(featById["f" + state.fy], 0.82), 50);
   document.getElementById("map-loading").remove();
   document.getElementById("updated").textContent = "Data oppdatert av SSB " + new Date(data.updated).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" });
   S.onThemeChange(() => update());
