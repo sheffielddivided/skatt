@@ -13,6 +13,7 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `profil.html` | **Kommuneprofilen** – punktdiagram med to valgfrie indikatorer (skatt, inntekt, utdanning, alder, sysselsetting, trygd), kart og full profil per kommune | SSB 07459, 06944, 05671, 12558, 06445, 09429 m.fl., FHI (NAV-data) |
 | `alder.html` | **Aldersbølgen** – animerte befolkningspyramider 1986–i dag for Norge, fylker og kommuner, eldreandel og forsørgerbrøk | SSB 07459 |
 | `befolkning.html` | **Befolkningsutviklingen** – fødselsoverskudd og nettoinnvandring siden 1900, inn-/utvandring etter statsborgerskap og land, kommunevis dekomponering av veksten | SSB 05803, 05476, 07822, 06913, 13256 |
+| `ulikhet.html` | **Inntektsulikhet** – Gini og P90/P10 for landet siden 1986 og per kommune, inntektsprofil (nasjonale tideler), vedvarende lavinntekt for alle og barn, median inntekt | SSB 07756, 12558, 06944, FHI |
 | `formue.html` | **Formuesskatt og utflytting** – formuesskatt over tid, hvem som betaler, utvandring av norske statsborgere etter land (Sveits), formuesskatt per kommune | SSB 10333, 08231, 09201, 03014 |
 
 ## Data
@@ -25,6 +26,7 @@ python3 scripts/build_data.py        # skatt, petroleum, formuesskatt
 python3 scripts/build_demografi.py   # aldersfordeling (data/alder/)
 python3 scripts/build_profil.py      # kommuneprofil (SSB + FHI)
 python3 scripts/build_befolkning.py  # befolkningsendringer og flytting etter land
+python3 scripts/build_ulikhet.py     # inntektsulikhet (SSB + FHI)
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.
