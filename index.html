@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skatt i tall</title>
+  <meta name="description" content="Visuelle studier av norsk skatt basert på åpne data fra Statistisk sentralbyrå.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .hero { padding: 72px 0 40px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; align-items: end; }
+    .hero h1 { font-size: clamp(40px, 6vw, 72px); line-height: 1.02; margin: 14px 0 20px; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p.lead { font-size: 18px; color: var(--text-2); max-width: 58ch; margin: 0; }
+    .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .stat { padding: 18px 18px 16px; }
+    .stat .v { font-size: 28px; font-weight: 650; letter-spacing: -.02em; margin-top: 6px; }
+    .stat .s { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+    .stat .l { font-size: 13px; color: var(--text-2); }
+
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 56px 0 18px; }
+    .section-head h2 { font-size: 28px; }
+    .studies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .study { display: flex; flex-direction: column; overflow: hidden; text-decoration: none; color: inherit; transition: transform .2s ease, box-shadow .2s ease, border-color .2s; }
+    a.study:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 2px 4px rgba(0,0,0,.05), 0 18px 40px rgba(0,0,0,.09); }
+    .study .thumb { height: 230px; background: var(--surface-2); border-bottom: 1px solid var(--border); display: grid; place-items: center; position: relative; overflow: hidden; }
+    .study .thumb svg { width: 100%; height: 100%; }
+    .study .body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .study h3 { font-size: 22px; }
+    .study p { margin: 0; color: var(--text-2); font-size: 14.5px; }
+    .study .meta { margin-top: auto; padding-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .study .go { margin-left: auto; font-weight: 600; font-size: 14px; color: var(--accent); display: inline-flex; gap: 6px; align-items: center; }
+    .study.soon { border-style: dashed; box-shadow: none; background: transparent; }
+    .study.soon .thumb { background: transparent; }
+    .soon-list { margin: 0; padding-left: 18px; color: var(--text-2); font-size: 14px; }
+
+    .about { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .about .card { padding: 22px; }
+    .about h3 { font-size: 16px; margin-bottom: 8px; }
+    .about p { margin: 0; color: var(--text-2); font-size: 14px; }
+
+    @media (max-width: 1000px) {
+      .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 28px; }
+      .studies, .about { grid-template-columns: 1fr; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Skatt i tall</span>
+      </a>
+      <nav class="nav" aria-label="Studier">
+        <a href="./" aria-current="page">Oversikt</a>
+        <a href="kart.html">Skattekartet</a>
+        <a href="petroleum.html">Petroleumsskatten</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Åpne data · Statistisk sentralbyrå</span>
+        <h1 class="display">Hvor kommer <em>skatten</em> fra?</h1>
+        <p class="lead">Interaktive studier av norsk skatteinngang – fra hver enkelt kommune til sokkelen i Nordsjøen. Alle tall hentes fra SSBs skatteregnskap og oppdateres jevnlig.</p>
+      </div>
+      <div class="stats" id="stats" aria-live="polite">
+        <div class="card stat"><div class="l">Skatteinngang i alt</div><div class="v">–</div><div class="s">&nbsp;</div></div>
+        <div class="card stat"><div class="l">Petroleumsskatt</div><div class="v">–</div><div class="s">&nbsp;</div></div>
+        <div class="card stat"><div class="l">Petroleum, andel av alt</div><div class="v">–</div><div class="s">&nbsp;</div></div>
+        <div class="card stat"><div class="l">Hittil i år</div><div class="v">–</div><div class="s">&nbsp;</div></div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <h2 class="display">Studier</h2>
+      <span class="faint">Velg en studie for å utforske</span>
+    </div>
+    <section class="studies">
+      <a class="card study" href="kart.html">
+        <div class="thumb" id="thumb-map" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 1 · Kommuner og fylker</span>
+          <h3 class="display">Skattekartet</h3>
+          <p>Skatteinngang i alle landets kommuner og fylker, totalt eller per innbygger, for hvert år siden 2008. Velg skattearter, sammenlign med året før og klikk deg inn på hver kommune.</p>
+          <div class="meta"><span class="pill">SSB 07022</span><span class="pill">SSB 11342</span><span class="go">Åpne kartet →</span></div>
+        </div>
+      </a>
+      <a class="card study" href="petroleum.html">
+        <div class="thumb" id="thumb-petro" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 2 · Tidsserie</span>
+          <h3 class="display">Petroleumsskatten</h3>
+          <p>Ordinær skatt og særskatt på utvinning av petroleum – utvikling over tid, og hvor stor del av skatten fra selskaper og av den totale skatteinngangen den utgjør.</p>
+          <div class="meta"><span class="pill">SSB 07391</span><span class="pill">SSB 03014</span><span class="go">Se utviklingen →</span></div>
+        </div>
+      </a>
+      <div class="card study soon">
+        <div class="thumb" aria-hidden="true">
+          <svg viewBox="0 0 200 120" style="width:120px;height:auto;color:var(--border-strong)"><g fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 5" stroke-linecap="round"><rect x="20" y="20" width="160" height="80" rx="12"/><path d="M100 45v30M85 60h30"/></g></svg>
+        </div>
+        <div class="body">
+          <span class="eyebrow">Kommer</span>
+          <h3 class="display">Flere studier</h3>
+          <p>Nettstedet er bygget for å vokse. Mulige neste studier:</p>
+          <ul class="soon-list">
+            <li>Skatt og inntekt per kommune (SSB 06944)</li>
+            <li>Formuesskatt og utflytting</li>
+            <li>Månedlig skatteinngang og sesongmønster</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <h2 class="display">Om dataene</h2>
+    </div>
+    <section class="about">
+      <div class="card"><h3>Skatteregnskapet</h3><p>SSBs skatteregnskapsstatistikk viser innbetalte og fordelte skatter og avgifter per måned, akkumulert gjennom året. Årstall er tallene per desember; inneværende år vises som «hittil i år».</p></div>
+      <div class="card"><h3>Dagens kommunegrenser</h3><p>Kommunereformen (2020) og fylkesdelingen (2024) endret inndelingen. Alle år er omregnet til dagens 357 kommuner og 15 fylker med SSBs endringskatalog (Klass), slik at tallene kan sammenlignes over tid.</p></div>
+      <div class="card"><h3>Åpen kildekode</h3><p>Data hentes med et skript direkte fra SSBs åpne API og lagres som statiske filer. Kartgrunnlaget er fra Kartverket. Alle data er lisensiert under CC BY 4.0.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: <a href="https://www.ssb.no/statbank/">Statistisk sentralbyrå</a> · Kart: <a href="https://www.kartverket.no/">Kartverket</a> (CC BY 4.0)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+
+  <script>
+  (async function () {
+    const S = window.Skatt;
+    const [ord, reg, topo] = await Promise.all([
+      fetch("data/skatt-ordning.json").then((r) => r.json()),
+      fetch("data/skatt-regioner.json").then((r) => r.json()),
+      fetch("data/norge-2024.topo.json").then((r) => r.json()),
+    ]);
+
+    // ---- Nøkkeltall ----
+    const months = ord.months;
+    const last = months[months.length - 1];
+    const lastFullDec = months.filter((m) => m.endsWith("M12")).pop();
+    const fullYear = lastFullDec.slice(0, 4);
+    const at = (key, m) => ord.series[key][months.indexOf(m)];
+    const total = at("0:A", lastFullDec);
+    const petro = at("2:C", lastFullDec) + at("2:D", lastFullDec);
+    const cards = document.querySelectorAll("#stats .stat");
+    const setCard = (i, v, s) => { cards[i].querySelector(".v").textContent = v; cards[i].querySelector(".s").textContent = s; };
+    setCard(0, S.mill(total), `Fordelt skatt ${fullYear}`);
+    setCard(1, S.mill(petro), `Ordinær skatt + særskatt ${fullYear}`);
+    setCard(2, S.pct(100 * petro / total, 0), `av all skatt i ${fullYear}`);
+    const ytd = at("0:A", last);
+    const lm = +last.slice(5);
+    const prev = at("0:A", `${+last.slice(0, 4) - 1}M${last.slice(5)}`);
+    if (lm === 12) setCard(3, S.mill(ytd), `${last.slice(0, 4)}`);
+    else setCard(3, S.mill(ytd), `jan–${S.MONTHS_SHORT[lm - 1]} ${last.slice(0, 4)} · ${S.pct(100 * (ytd / prev - 1), 1, true)} mot året før`);
+    document.getElementById("updated").textContent = "Data oppdatert av SSB " + new Date(ord.updated).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" });
+
+    // ---- Miniatyrkart (per innbygger, fylker, siste hele år) ----
+    function drawMap() {
+      const el = document.getElementById("thumb-map");
+      el.innerHTML = "";
+      const w = 400, h = 230;
+      const fc = topojson.feature(topo, topo.objects.kommuner);
+      const proj = d3.geoTransverseMercator().rotate([-15, -65]).fitExtent([[10, 10], [w - 10, h - 10]], fc);
+      const path = d3.geoPath(proj);
+      const yi = reg.years.indexOf(+fullYear);
+      const vals = {};
+      for (const [k, r] of Object.entries(reg.kommuner)) vals[k] = r.v[0][yi] * 1e6 / r.pop[yi];
+      const dark = S.isDark();
+      const ramp = dark ? ["#0d366b", "#104281", "#1c5cab", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"] : ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
+      const q = d3.scaleQuantile(Object.values(vals), ramp);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("preserveAspectRatio", "xMidYMid meet");
+      svg.append("g").selectAll("path").data(fc.features).join("path").attr("d", path)
+        .attr("fill", (d) => q(vals[d.properties.id])).attr("stroke", "var(--surface-2)").attr("stroke-width", 0.3);
+    }
+    function drawPetro() {
+      const el = document.getElementById("thumb-petro");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { t: 30, r: 24, b: 30, l: 24 };
+      const decs = months.filter((x) => x.endsWith("M12"));
+      const data = decs.map((x) => ({ y: +x.slice(0, 4), p: at("2:C", x) + at("2:D", x), t: at("0:A", x) }));
+      const x = d3.scaleBand(data.map((d) => d.y), [m.l, w - m.r]).padding(0.25);
+      const y = d3.scaleLinear([0, d3.max(data, (d) => d.t)], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("g").selectAll("rect").data(data).join("rect")
+        .attr("x", (d) => x(d.y)).attr("width", x.bandwidth()).attr("y", (d) => y(d.t)).attr("height", (d) => y(0) - y(d.t))
+        .attr("rx", 2).attr("fill", "var(--neutral-mark)").attr("opacity", 0.55);
+      svg.append("g").selectAll("rect").data(data).join("rect")
+        .attr("x", (d) => x(d.y)).attr("width", x.bandwidth()).attr("y", (d) => y(d.p)).attr("height", (d) => y(0) - y(d.p))
+        .attr("rx", 2).attr("fill", "var(--series-1)");
+      svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12)
+        .text(`Petroleumsskatt av total skatt, ${data[0].y}–${data[data.length - 1].y}`);
+    }
+    drawMap(); drawPetro();
+    S.onThemeChange(() => { drawMap(); drawPetro(); });
+  })();
+  </script>
+</body>
+</html>

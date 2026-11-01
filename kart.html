@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skattekartet · Skatt i tall</title>
+  <meta name="description" content="Skatteinngang i norske kommuner og fylker, totalt og per innbygger, fra 2008 til i dag.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/kart.css">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Skatt i tall</span>
+      </a>
+      <nav class="nav" aria-label="Studier">
+        <a href="./">Oversikt</a>
+        <a href="kart.html" aria-current="page">Skattekartet</a>
+        <a href="petroleum.html">Petroleumsskatten</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 1</span>
+        <h1 class="display">Skattekartet</h1>
+      </div>
+      <p class="muted">Hvor mye skatt kommer inn fra hver kommune og hvert fylke? Velg år, skattearter og målestokk – og klikk på kartet for å se nøkkeltall.</p>
+    </div>
+
+    <section class="card toolbar" aria-label="Valg">
+      <div class="field">
+        <label for="year">År</label>
+        <div class="row">
+          <select id="year" class="select"></select>
+          <button class="icon-btn" id="play" aria-label="Spill av utviklingen år for år" title="Spill av år for år">
+            <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>
+            <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="lvl-label">Nivå</span>
+        <div class="seg" role="group" aria-labelledby="lvl-label" id="level">
+          <button data-v="k" aria-pressed="true">Kommuner</button>
+          <button data-v="f" aria-pressed="false">Fylker</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="met-label">Vis</span>
+        <div class="seg" role="group" aria-labelledby="met-label" id="metric">
+          <button data-v="pc" aria-pressed="true">Per innbygger</button>
+          <button data-v="tot" aria-pressed="false">Totalt</button>
+          <button data-v="chg" aria-pressed="false">Endring</button>
+        </div>
+      </div>
+      <div class="field arts-field">
+        <span class="label">Skattearter</span>
+        <div class="dropdown">
+          <button class="select arts-btn" id="arts-btn" aria-haspopup="true" aria-expanded="false"><span id="arts-label">Skatteinngang i alt</span></button>
+          <div class="popover card" id="arts-pop" role="dialog" aria-label="Velg skattearter" hidden>
+            <div class="presets" id="presets"></div>
+            <div class="art-list" id="art-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field search-field">
+        <label for="search">Finn kommune eller fylke</label>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" class="input" type="search" placeholder="F.eks. Bærum" autocomplete="off" list="region-list">
+          <datalist id="region-list"></datalist>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card map-card">
+        <div class="map-head">
+          <div>
+            <h2 id="map-title">Skatteinngang per innbygger</h2>
+            <div class="faint" id="map-sub"></div>
+          </div>
+        </div>
+        <div class="map-wrap" id="map-wrap">
+          <div class="loading" id="map-loading"><div class="spinner"></div>Laster kart og data …</div>
+          <svg id="map" role="img" aria-label="Kart over Norge farget etter skatteinngang"></svg>
+          <div class="zoom">
+            <button class="icon-btn" id="zoom-in" aria-label="Zoom inn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button class="icon-btn" id="zoom-out" aria-label="Zoom ut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+            <button class="icon-btn" id="zoom-reset" aria-label="Vis hele landet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+          </div>
+          <div class="legend-box" id="legend"></div>
+        </div>
+      </div>
+
+      <aside class="card panel" id="panel" aria-live="polite"></aside>
+    </section>
+
+    <section class="card table-card">
+      <div class="table-head">
+        <div>
+          <h2 id="table-title">Alle kommuner</h2>
+          <div class="faint" id="table-sub">Klikk på en kolonne for å sortere, eller på en rad for å vise den i kartet.</div>
+        </div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="notes">
+      <h2 class="display">Om tallene</h2>
+      <div class="notes-grid">
+        <p><b>Skatteinngang</b> er innbetalt skatt fordelt på kommunen der skatteyteren hører hjemme (SSB tabell 07022, akkumulert per desember). For inneværende år vises tall hittil i år, og endring sammenlignes med samme periode året før.</p>
+        <p><b>Per innbygger</b> beregnes med folketallet per 1. januar samme år (SSB tabell 11342). <b>Landssnittet</b> er summen for alle kommuner delt på folketallet – skatt fra sokkelen, Svalbard og kildeskatt holdes utenfor fordi den ikke kan knyttes til en kommune.</p>
+        <p><b>Kommunegrenser:</b> Alle år vises med dagens inndeling. Tall fra før sammenslåinger er summert, og ved delinger (f.eks. Ålesund/Haram i 2024) er tallene fordelt etter folketall. Tidsserier for kommuner som er delt er derfor anslag.</p>
+        <p><b>Fylker</b> er summen av kommunene i fylket. Arbeidsgiveravgift føres der arbeidsgiveren er registrert, og selskapsskatt kan påvirke tallene i kommuner med store foretak. Petroleumsskatt føres i all hovedsak på Kontinentalsokkelen.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Statistisk sentralbyrå, tabell <a href="https://www.ssb.no/statbank/table/07022/">07022</a> og <a href="https://www.ssb.no/statbank/table/11342/">11342</a> · Kart: Kartverket (CC BY 4.0)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/kart.js"></script>
+</body>
+</html>
