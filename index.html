@@ -66,6 +66,7 @@
         <a href="profil.html">Kommuneprofilen</a>
         <a href="alder.html">Aldersbølgen</a>
         <a href="befolkning.html">Befolkningen</a>
+        <a href="ulikhet.html">Ulikhet</a>
       </nav>
       <span class="spacer"></span>
       <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
@@ -148,6 +149,15 @@
           <div class="meta"><span class="pill">SSB 05803</span><span class="pill">SSB 05476</span><span class="pill">SSB 07822</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
+      <a class="card study" href="ulikhet.html">
+        <div class="thumb" id="thumb-ul" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 7 · Inntekt</span>
+          <h3 class="display">Inntektsulikhet i kommunene</h3>
+          <p>Gini-koeffisient, P90/P10 og inntektsprofil for hver kommune – og hvor mange barn som vokser opp i familier med vedvarende lavinntekt.</p>
+          <div class="meta"><span class="pill">SSB 07756</span><span class="pill">SSB 12558</span><span class="pill">FHI</span><span class="go">Se forskjellene →</span></div>
+        </div>
+      </a>
       <div class="card study soon">
         <div class="thumb" aria-hidden="true">
           <svg viewBox="0 0 200 120" style="width:120px;height:auto;color:var(--border-strong)"><g fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 5" stroke-linecap="round"><rect x="20" y="20" width="160" height="80" rx="12"/><path d="M100 45v30M85 60h30"/></g></svg>
@@ -157,8 +167,7 @@
           <h3 class="display">Flere studier</h3>
           <p>Nettstedet er bygget for å vokse. Mulige neste studier:</p>
           <ul class="soon-list">
-            <li>Inntektsulikhet i kommunene (SSB 12558)</li>
-            <li>Trygd og sysselsetting over tid (FHI/NAV)</li>
+                        <li>Trygd og sysselsetting over tid (FHI/NAV)</li>
             <li>Innvandrere i arbeid og skatt</li>
             <li>Månedlig skatteinngang og sesongmønster</li>
           </ul>
@@ -318,8 +327,21 @@
       }
       svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text("Fødselsoverskudd og nettoinnvandring, 1951–" + rows[rows.length - 1].y);
     }
-    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef();
-    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); });
+    const ul = await fetch("data/ulikhet.json").then((r) => r.json());
+    function drawUl() {
+      const el = document.getElementById("thumb-ul");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { t: 34, r: 24, b: 16, l: 24 };
+      const n = ul.national;
+      const rows = n.years.map((y, i) => ({ y, v: n.gini[i] })).filter((r) => r.v != null);
+      const x = d3.scaleLinear(d3.extent(rows, (r) => r.y), [m.l, w - m.r]);
+      const y = d3.scaleLinear([0.18, d3.max(rows, (r) => r.v)], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("path").datum(rows).attr("fill", "none").attr("stroke", "var(--series-1)").attr("stroke-width", 2.5).attr("d", d3.line().x((r) => x(r.y)).y((r) => y(r.v)));
+      svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text(`Gini-koeffisient for Norge, ${rows[0].y}–${rows[rows.length - 1].y}`);
+    }
+    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); });
   })();
   </script>
 </body>
