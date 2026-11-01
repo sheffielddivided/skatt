@@ -10,6 +10,8 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `index.html` | Landingsside med nøkkeltall og oversikt over studier | – |
 | `kart.html` | **Skattekartet** – zoombart kart over kommuner/fylker, totalt, per innbygger eller endring, valgfrie skattearter, filter per fylke (zoomer inn), detaljpanel med tidsserie | SSB 07022, 11342, Klass 131, Kartverket |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
+| `eiendomsskatt.html` | **Eiendomsskatten** – inntekter fra bolig, fritid, kraft og næring siden 2007, ordninger, satser og enebolig-eksempel per kommune | SSB 14674, 14155 |
+| `naering.html` | **Næringslivet** – sysselsatte etter næring per kommune 2008–, spesialisering, pendling og sammenheng med skatt | SSB 13470 |
 | `profil.html` | **Kommuneprofilen** – punktdiagram med to valgfrie indikatorer (skatt, inntekt, utdanning, alder, sysselsetting, trygd), kart og full profil per kommune | SSB 07459, 06944, 05671, 12558, 06445, 09429 m.fl., FHI (NAV-data) |
 | `alder.html` | **Aldersbølgen** – animerte befolkningspyramider 1986–i dag for Norge, fylker og kommuner, eldreandel og forsørgerbrøk | SSB 07459 |
 | `befolkning.html` | **Befolkningsutviklingen** – fødselsoverskudd og nettoinnvandring siden 1900, inn-/utvandring etter statsborgerskap og land, kommunevis dekomponering av veksten | SSB 05803, 05476, 07822, 06913, 13256 |
@@ -27,6 +29,8 @@ python3 scripts/build_demografi.py   # aldersfordeling (data/alder/)
 python3 scripts/build_profil.py      # kommuneprofil (SSB + FHI)
 python3 scripts/build_befolkning.py  # befolkningsendringer og flytting etter land
 python3 scripts/build_ulikhet.py     # inntektsulikhet (SSB + FHI)
+python3 scripts/build_eiendom.py     # eiendomsskatt (KOSTRA)
+python3 scripts/build_naering.py     # sysselsatte etter næring
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.

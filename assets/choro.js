@@ -71,11 +71,22 @@
     function color(id) {
       if (out(id)) return "var(--map-out)";
       const v = state.values[id];
+      if (state.categories) return state.categories.find((c) => c.id === v)?.color || "var(--map-empty)";
       return v == null || !isFinite(v) ? "var(--map-empty)" : state.scale(v);
     }
 
     function legend() {
       const lg = el.querySelector(".choro-legend");
+      if (state.categories) {
+        const cnt = (cid) => Object.entries(state.values).filter(([id, v]) => v === cid && !out(id)).length;
+        lg.innerHTML = `<div class="lt">${S.escapeHtml(state.title || "")}</div>` + state.categories
+          .map((c) => `<div class="bin" data-c="${c.color}"><span class="sw" style="background:${c.color}"></span><span>${S.escapeHtml(c.name)}</span><span style="margin-left:auto;padding-left:10px;color:var(--text-3)">${cnt(c.id)}</span></div>`).join("");
+        lg.querySelectorAll(".bin").forEach((b) => {
+          b.onmouseenter = () => regions.classed("dim", (d) => color(d.properties.id) !== b.dataset.c);
+          b.onmouseleave = () => regions.classed("dim", false);
+        });
+        return;
+      }
       const vs = Object.entries(state.values).filter(([id, v]) => v != null && !out(id)).map((e) => e[1]);
       if (!vs.length) { lg.innerHTML = ""; return; }
       const f = state.short || state.fmt;
@@ -84,10 +95,11 @@
         const t = state.scale.domain();
         labels = state.scale.range().map((c, i) => (i === 0 ? `under ${f(t[0])}` : i === t.length ? `over ${f(t[t.length - 1])}` : `${f(t[i - 1])} – ${f(t[i])}`));
       } else {
-        const q = state.scale.quantiles();
         const ext = d3.extent(vs);
-        const t = [ext[0], ...q, ext[1]];
-        labels = state.scale.range().map((c, i) => `${f(t[i])} – ${f(t[i + 1])}`);
+        const cuts = state.scale.quantiles ? state.scale.quantiles() : state.scale.domain();
+        const t = [ext[0], ...cuts, ext[1]];
+        if (state.lowBin) t[1] = state.lowMin;
+        labels = state.scale.range().map((c, i) => (state.lowBin && i === 0 ? f(ext[0]) : `${f(t[i])} – ${f(t[i + 1])}`));
       }
       lg.innerHTML = `<div class="lt">${S.escapeHtml(state.title || "")}</div>` + state.scale.range().map((c, i) => ({ c, i })).reverse()
         .map(({ c, i }) => `<div class="bin" data-c="${c}"><span class="sw" style="background:${c}"></span><span>${labels[i]}</span></div>`).join("");
@@ -101,8 +113,21 @@
       const prevF = state.fylke;
       state = { ...state, ...o };
       const ramp = S.isDark() ? RAMP_D : RAMP_L;
-      const vs = Object.entries(state.values).filter(([id, v]) => v != null && isFinite(v) && !out(id)).map((e) => e[1]);
-      state.scale = state.diverging ? d3.scaleThreshold(divThresholds(vs), S.isDark() ? DIV_D : DIV_L) : d3.scaleQuantile(vs, ramp);
+      if ("values" in o && !("categories" in o)) state.categories = null;
+      const vs = state.categories ? [0] : Object.entries(state.values).filter(([id, v]) => v != null && isFinite(v) && !out(id)).map((e) => e[1]);
+      state.lowBin = false;
+      if (state.diverging) state.scale = d3.scaleThreshold(divThresholds(vs), S.isDark() ? DIV_D : DIV_L);
+      else {
+        // Mange like minimumsverdier (f.eks. 0) gir like kvantiler – gi dem en egen klasse.
+        const mn = d3.min(vs), rest = vs.filter((v) => v > mn);
+        if (rest.length && (vs.length - rest.length) / vs.length > 0.15) {
+          const q = d3.scaleQuantile(rest, d3.range(6)).quantiles();
+          const cut = mn + (d3.min(rest) - mn) / 2;
+          state.scale = d3.scaleThreshold([cut, ...q], ramp);
+          state.lowBin = true;
+          state.lowMin = d3.min(rest);
+        } else state.scale = d3.scaleQuantile(vs, ramp);
+      }
       regions.attr("fill", (d) => color(d.properties.id)).classed("out", (d) => out(d.properties.id));
       gS.selectAll("*").remove();
       if (state.fylke && byF[state.fylke]) gS.append("path").attr("class", "choro-focus").attr("d", path(byF[state.fylke]));
