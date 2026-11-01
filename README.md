@@ -10,6 +10,8 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `index.html` | Landingsside med nøkkeltall og oversikt over studier | – |
 | `kart.html` | **Skattekartet** – zoombart kart over kommuner/fylker, totalt, per innbygger eller endring, valgfrie skattearter, filter per fylke (zoomer inn), detaljpanel med tidsserie | SSB 07022, 11342, Klass 131, Kartverket |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
+| `profil.html` | **Kommuneprofilen** – punktdiagram med to valgfrie indikatorer (skatt, inntekt, utdanning, alder, sysselsetting, trygd), kart og full profil per kommune | SSB 07459, 06944, 05671, 12558, 06445, 09429 m.fl., FHI (NAV-data) |
+| `alder.html` | **Aldersbølgen** – animerte befolkningspyramider 1986–i dag for Norge, fylker og kommuner, eldreandel og forsørgerbrøk | SSB 07459 |
 | `formue.html` | **Formuesskatt og utflytting** – formuesskatt over tid, hvem som betaler, utvandring av norske statsborgere etter land (Sveits), formuesskatt per kommune | SSB 10333, 08231, 09201, 03014 |
 
 ## Data
@@ -18,8 +20,13 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 `data/skatt-regioner.json`, `data/skatt-ordning.json` og `data/formue.json`:
 
 ```bash
-python3 scripts/build_data.py
+python3 scripts/build_data.py        # skatt, petroleum, formuesskatt
+python3 scripts/build_demografi.py   # aldersfordeling (data/alder/)
+python3 scripts/build_profil.py      # kommuneprofil (SSB + FHI)
 ```
+
+Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.
+Felles kode for SSB-/FHI-uthenting og harmonisering av kommunekoder ligger i `scripts/ssblib.py`.
 
 GitHub Actions-arbeidsflyten `.github/workflows/oppdater-data.yml` kjører skriptet hver uke og committer nye tall.
 

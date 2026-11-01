@@ -117,7 +117,9 @@ button, input, select { font: inherit; color: inherit; }
 .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--text); display: grid; place-items: center; }
 .brand-mark svg { width: 16px; height: 16px; }
 .brand-mark svg rect { fill: var(--bg); }
-.nav { display: flex; gap: 4px; margin-left: 8px; }
+.nav { display: flex; gap: 4px; margin-left: 8px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { white-space: nowrap; }
 .nav a { color: var(--text-2); text-decoration: none; padding: 6px 12px; border-radius: 999px; font-size: 14px; }
 .nav a:hover { color: var(--text); background: var(--surface-2); }
 .nav a[aria-current="page"] { color: var(--text); background: var(--surface-2); font-weight: 550; }

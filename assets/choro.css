@@ -1,0 +1,20 @@
+.choro { position: relative; background: var(--sea); overflow: hidden; }
+.choro-svg { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+.choro-svg:active { cursor: grabbing; }
+.choro-region { stroke: var(--map-stroke); stroke-width: .5; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .35s ease; }
+.choro-region.dim { opacity: .25; }
+.choro-region.out { pointer-events: none; }
+.choro-fylke { fill: none; stroke: var(--map-fylke); stroke-width: 1; stroke-opacity: .5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.choro-hover { fill: none; stroke: var(--text); stroke-width: 1.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.choro-focus { fill: none; stroke: var(--text); stroke-width: 1.5; stroke-opacity: .7; vector-effect: non-scaling-stroke; pointer-events: none; }
+.choro-halo { fill: none; stroke: var(--surface); stroke-width: 5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.choro-sel { fill: none; stroke: var(--text); stroke-width: 2.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.choro-zoom { position: absolute; right: 12px; top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.choro-zoom .icon-btn { box-shadow: var(--shadow); }
+.choro-legend { position: absolute; left: 12px; bottom: 12px; background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; box-shadow: var(--shadow); font-size: 12px; backdrop-filter: blur(6px); }
+.choro-legend:empty { display: none; }
+.choro-legend .lt { font-weight: 600; color: var(--text-2); margin-bottom: 6px; max-width: 200px; }
+.choro-legend .bin { display: flex; align-items: center; gap: 8px; color: var(--text-2); padding: 1px 4px; margin: 0 -4px; border-radius: 4px; }
+.choro-legend .bin:hover { background: var(--surface-2); color: var(--text); }
+.choro-legend .sw { width: 20px; height: 11px; border-radius: 3px; flex: none; }
+@media (max-width: 720px) { .choro-legend { font-size: 11px; padding: 8px 10px; } .choro-legend .sw { width: 14px; } }

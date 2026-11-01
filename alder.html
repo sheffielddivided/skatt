@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aldersbølgen · Skatt i tall</title>
+  <meta name="description" content="Befolkningspyramider og eldrebølgen i alle norske kommuner og fylker fra 1986 til i dag.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <link rel="stylesheet" href="assets/choro.css">
+  <style>
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; padding: 16px 18px; }
+    .controls .region .input { width: 260px; }
+    .year-ctl { display: flex; align-items: center; gap: 10px; }
+    .year-ctl input[type=range] { width: 260px; accent-color: var(--accent); }
+    .year-ctl .yl { font-size: 22px; font-weight: 650; letter-spacing: -.02em; min-width: 56px; font-variant-numeric: tabular-nums; }
+    #play .i-pause { display: none; }
+    #play.playing .i-play { display: none; }
+    #play.playing .i-pause { display: block; }
+    #play.playing { color: var(--accent); border-color: var(--accent); }
+    .top { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .top .panel { margin-top: 0; }
+    .kcards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .kcards .kpi .v { font-size: 26px; }
+    .kcards .kpi.wide { grid-column: 1 / -1; }
+    .pyr .bar { transition: none; }
+    .pyr .age { fill: var(--text-3); font-size: 11.5px; text-anchor: middle; }
+    .pyr .cmp { fill: none; stroke: var(--text); stroke-width: 1.5; stroke-opacity: .65; }
+    .pyr .side { fill: var(--text-2); font-size: 13px; font-weight: 600; }
+    .mapgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+    .mapgrid .choro { height: 640px; border-radius: 12px; }
+    .rank-list { list-style: none; margin: 0; padding: 0; }
+    .rank-list li button { width: 100%; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .rank-list li button:hover { background: var(--surface-2); }
+    .rank-list .r { color: var(--text-3); font-size: 12px; }
+    .rank-list .v { font-weight: 600; }
+    .rank-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; }
+    .rank-cols h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin: 6px 0 6px 8px; }
+    @media (max-width: 1100px) { .top, .mapgrid { grid-template-columns: 1fr; } .mapgrid .choro { height: 70vh; } }
+    @media (max-width: 720px) { .controls .field, .controls .region .input, .year-ctl input[type=range] { width: 100%; } .year-ctl { width: 100%; } .rank-cols { grid-template-columns: 1fr; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+  <script src="assets/choro.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Skatt i tall</span>
+      </a>
+      <nav class="nav" aria-label="Studier">
+        <a href="./">Oversikt</a>
+        <a href="kart.html">Skattekartet</a>
+        <a href="petroleum.html">Petroleumsskatten</a>
+        <a href="formue.html">Formuesskatten</a>
+        <a href="profil.html">Kommuneprofilen</a>
+        <a href="alder.html" aria-current="page">Aldersbølgen</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 5</span>
+        <h1 class="display">Aldersbølgen</h1>
+        <p class="muted">Norge blir eldre – men svært ulikt fra kommune til kommune. Se befolkningspyramiden for hele landet, et fylke eller en kommune fra 1986 til i dag, og hvor mange eldre det er per person i arbeidsfør alder.</p>
+      </div>
+    </div>
+
+    <section class="card controls" aria-label="Valg">
+      <div class="field region">
+        <label for="region">Område</label>
+        <input id="region" class="input" type="search" list="rlist" placeholder="Norge, fylke eller kommune" autocomplete="off">
+        <datalist id="rlist"></datalist>
+      </div>
+      <div class="field">
+        <label for="year">År</label>
+        <div class="year-ctl">
+          <button class="icon-btn" id="play" aria-label="Spill av år for år" title="Spill av">
+            <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>
+            <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          </button>
+          <input type="range" id="year" min="0" max="0" step="1">
+          <span class="yl" id="yl"></span>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="cmp-label">Sammenlign med</span>
+        <div class="seg" role="group" aria-labelledby="cmp-label" id="cmp">
+          <button data-v="norge" aria-pressed="true">Norge</button>
+          <button data-v="first" aria-pressed="false" id="cmp-first">1986</button>
+          <button data-v="none" aria-pressed="false">Ingen</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="top">
+      <div class="card panel">
+        <div class="panel-head">
+          <div><h2 id="pyr-title"></h2><p id="pyr-sub"></p></div>
+        </div>
+        <div class="legend" id="pyr-legend"></div>
+        <div class="chart pyr" id="pyr"></div>
+      </div>
+      <div class="kcards" id="kcards" aria-live="polite"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Andel 67 år og eldre</h2><p>Prosent av befolkningen.</p></div></div>
+        <div class="legend" id="l1"></div>
+        <div class="chart" id="c1"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Eldre per 100 i arbeidsfør alder</h2><p>Personer 67+ per 100 personer 20–66 år.</p></div></div>
+        <div class="legend" id="l2"></div>
+        <div class="chart" id="c2"></div>
+      </section>
+    </div>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="map-title">Kommunene</h2><p id="map-sub">Klikk på en kommune for å se pyramiden.</p></div>
+        <div class="field">
+          <label for="mind">Vis i kartet</label>
+          <select id="mind" class="select">
+            <option value="a67">Andel 67 år og eldre</option>
+            <option value="a80">Andel 80 år og eldre</option>
+            <option value="fb">Eldre per 100 i arbeidsfør alder</option>
+            <option value="med">Medianalder</option>
+            <option value="a0_19">Andel 0–19 år</option>
+            <option value="growth">Befolkningsendring siden 1986</option>
+          </select>
+        </div>
+      </div>
+      <div class="mapgrid">
+        <div id="map"></div>
+        <div class="rank-cols" id="ranks"></div>
+      </div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle kommuner</h2><p id="tbl-sub">Klikk på en kolonne for å sortere, eller på en rad for å se pyramiden.</p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Hvorfor det betyr noe for skatten</h3><p>Pensjonister betaler mindre skatt enn yrkesaktive, og eldre bruker mer helse- og omsorgstjenester. Når færre i arbeidsfør alder skal bære flere eldre, blir skattegrunnlaget per innbygger svakere – særlig i små distriktskommuner. Se <a href="profil.html#x=a67&y=skatt">sammenhengen mellom eldreandel og skatt</a>.</p></div>
+      <div><h3>Forsørgerbrøk</h3><p>«Eldre per 100 i arbeidsfør alder» er antall personer 67 år og eldre per 100 personer 20–66 år. Det sier ikke hvem som faktisk jobber, men er et vanlig mål på hvor tung eldrebølgen er.</p></div>
+      <div><h3>Om tallene</h3><p>Folketall per 1. januar etter kjønn og ettårig alder (SSB tabell 07459), summert til femårsgrupper. Alle år er omregnet til dagens kommuner. For kommuner som er delt (f.eks. Ålesund og Haram i 2024) er tidligere år fordelt etter folketall og er derfor anslag.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Statistisk sentralbyrå, tabell <a href="https://www.ssb.no/statbank/table/07459/">07459</a> · Kart: Kartverket (CC BY 4.0)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/alder.js"></script>
+</body>
+</html>
