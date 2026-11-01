@@ -8,13 +8,14 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | Side | Innhold | Kilder |
 | --- | --- | --- |
 | `index.html` | Landingsside med nøkkeltall og oversikt over studier | – |
-| `kart.html` | **Skattekartet** – zoombart kart over kommuner/fylker, totalt, per innbygger eller endring, valgfrie skattearter, detaljpanel med tidsserie | SSB 07022, 11342, Klass 131, Kartverket |
+| `kart.html` | **Skattekartet** – zoombart kart over kommuner/fylker, totalt, per innbygger eller endring, valgfrie skattearter, filter per fylke (zoomer inn), detaljpanel med tidsserie | SSB 07022, 11342, Klass 131, Kartverket |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
+| `formue.html` | **Formuesskatt og utflytting** – formuesskatt over tid, hvem som betaler, utvandring av norske statsborgere etter land (Sveits), formuesskatt per kommune | SSB 10333, 08231, 09201, 03014 |
 
 ## Data
 
 `scripts/build_data.py` henter alt fra SSBs åpne API (kun Python-standardbibliotek) og skriver
-`data/skatt-regioner.json` og `data/skatt-ordning.json`:
+`data/skatt-regioner.json`, `data/skatt-ordning.json` og `data/formue.json`:
 
 ```bash
 python3 scripts/build_data.py

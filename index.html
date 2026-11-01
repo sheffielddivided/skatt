@@ -23,7 +23,7 @@
 
     .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 56px 0 18px; }
     .section-head h2 { font-size: 28px; }
-    .studies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .studies { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
     .study { display: flex; flex-direction: column; overflow: hidden; text-decoration: none; color: inherit; transition: transform .2s ease, box-shadow .2s ease, border-color .2s; }
     a.study:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 2px 4px rgba(0,0,0,.05), 0 18px 40px rgba(0,0,0,.09); }
     .study .thumb { height: 230px; background: var(--surface-2); border-bottom: 1px solid var(--border); display: grid; place-items: center; position: relative; overflow: hidden; }
@@ -62,6 +62,7 @@
         <a href="./" aria-current="page">Oversikt</a>
         <a href="kart.html">Skattekartet</a>
         <a href="petroleum.html">Petroleumsskatten</a>
+        <a href="formue.html">Formuesskatten</a>
       </nav>
       <span class="spacer"></span>
       <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
@@ -108,6 +109,15 @@
           <div class="meta"><span class="pill">SSB 07391</span><span class="pill">SSB 03014</span><span class="go">Se utviklingen →</span></div>
         </div>
       </a>
+      <a class="card study" href="formue.html">
+        <div class="thumb" id="thumb-formue" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 3 · Tidsserie og kommuner</span>
+          <h3 class="display">Formuesskatt og utflytting</h3>
+          <p>Hvor mye gir formuesskatten, hvem betaler den og hvor bor de? Og flyttet flere nordmenn til Sveits etter at skatten ble skjerpet i 2022?</p>
+          <div class="meta"><span class="pill">SSB 10333</span><span class="pill">SSB 08231</span><span class="pill">SSB 09201</span><span class="go">Utforsk →</span></div>
+        </div>
+      </a>
       <div class="card study soon">
         <div class="thumb" aria-hidden="true">
           <svg viewBox="0 0 200 120" style="width:120px;height:auto;color:var(--border-strong)"><g fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 5" stroke-linecap="round"><rect x="20" y="20" width="160" height="80" rx="12"/><path d="M100 45v30M85 60h30"/></g></svg>
@@ -118,8 +128,8 @@
           <p>Nettstedet er bygget for å vokse. Mulige neste studier:</p>
           <ul class="soon-list">
             <li>Skatt og inntekt per kommune (SSB 06944)</li>
-            <li>Formuesskatt og utflytting</li>
             <li>Månedlig skatteinngang og sesongmønster</li>
+            <li>Selskapsskatt og næringsstruktur</li>
           </ul>
         </div>
       </div>
@@ -150,6 +160,7 @@
       fetch("data/skatt-regioner.json").then((r) => r.json()),
       fetch("data/norge-2024.topo.json").then((r) => r.json()),
     ]);
+    const formue = await fetch("data/formue.json").then((r) => r.json());
 
     // ---- Nøkkeltall ----
     const months = ord.months;
@@ -207,8 +218,23 @@
       svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12)
         .text(`Petroleumsskatt av total skatt, ${data[0].y}–${data[data.length - 1].y}`);
     }
-    drawMap(); drawPetro();
-    S.onThemeChange(() => { drawMap(); drawPetro(); });
+    function drawFormue() {
+      const el = document.getElementById("thumb-formue");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { t: 30, r: 24, b: 30, l: 24 };
+      const sw = Object.values(formue.emigration.countries).find((c) => c.name === "Sveits");
+      const data = formue.eyears.map((y, i) => ({ y, v: sw.v[i] }));
+      const x = d3.scaleBand(data.map((d) => d.y), [m.l, w - m.r]).padding(0.25);
+      const y = d3.scaleLinear([0, d3.max(data, (d) => d.v)], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("g").selectAll("rect").data(data).join("rect")
+        .attr("x", (d) => x(d.y)).attr("width", x.bandwidth()).attr("y", (d) => y(d.v)).attr("height", (d) => y(0) - y(d.v))
+        .attr("rx", 2).attr("fill", (d) => (d.y >= 2022 ? "var(--series-1)" : "var(--neutral-mark)"));
+      svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12)
+        .text(`Norske statsborgere som flyttet til Sveits, ${data[0].y}–${data[data.length - 1].y}`);
+    }
+    drawMap(); drawPetro(); drawFormue();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); });
   })();
   </script>
 </body>
