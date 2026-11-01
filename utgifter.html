@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hvor går skattepengene? · Skatt i tall</title>
+  <meta name="description" content="Hva bruker stat og kommune pengene på? Offentlige utgifter etter formål, fra pensjoner og sykehus til forsvar og bistand.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .calc { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 28px; padding: 26px; align-items: start; }
+    .calc h2 { font-size: 26px; margin-bottom: 8px; }
+    .calc .amount { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+    .calc .amount input { font-size: 26px; font-weight: 650; height: 56px; width: 100%; padding: 0 14px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface); font-variant-numeric: tabular-nums; }
+    .calc .amount span { font-size: 18px; color: var(--text-2); }
+    .calc .quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .calc .quick button { border: 1px solid var(--border); background: var(--surface); padding: 4px 10px; border-radius: 999px; font-size: 13px; cursor: pointer; color: var(--text-2); }
+    .calc .quick button:hover { border-color: var(--border-strong); color: var(--text); }
+    .receipt { display: flex; flex-direction: column; gap: 8px; }
+    .rrow { display: grid; grid-template-columns: 14px minmax(0, 1fr) 110px; gap: 10px; align-items: center; font-size: 14px; cursor: pointer; padding: 3px 4px; border-radius: 8px; }
+    .rrow:hover { background: var(--surface-2); }
+    .rrow .sw { width: 12px; height: 12px; border-radius: 3px; }
+    .rrow .n { color: var(--text); }
+    .rrow .n small { color: var(--text-3); display: block; font-size: 12px; }
+    .rrow .v { text-align: right; font-weight: 650; font-variant-numeric: tabular-nums; }
+    .rrow .bar { grid-column: 2 / -1; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: -2px; }
+    .rrow .bar div { height: 100%; border-radius: 3px; }
+    .rsub { margin: 2px 0 6px 28px; display: none; font-size: 13px; color: var(--text-2); }
+    .rsub.open { display: block; }
+    .rsub div { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--border); }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .tm-cell { cursor: pointer; }
+    .tm-cell rect { stroke: var(--surface); stroke-width: 2; }
+    .tm-cell text { pointer-events: none; }
+    .crumbs { display: flex; gap: 6px; align-items: center; font-size: 14px; margin-bottom: 10px; color: var(--text-2); }
+    .crumbs button { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 14px; }
+    .split .row { display: grid; grid-template-columns: 220px minmax(0, 1fr) 110px; gap: 12px; align-items: center; font-size: 13.5px; padding: 5px 0; }
+    .split .bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; background: var(--surface-2); }
+    .split .bar div { height: 100%; }
+    .split .bar div + div { border-left: 2px solid var(--surface); }
+    .split .v { text-align: right; color: var(--text-2); font-variant-numeric: tabular-nums; }
+    @media (max-width: 900px) { .calc { grid-template-columns: 1fr; } .split .row { grid-template-columns: 130px minmax(0, 1fr) 80px; } }
+    @media (max-width: 720px) { .controls .field, .controls .seg { width: 100%; } .controls .seg button { flex: 1; } .rrow { grid-template-columns: 14px minmax(0, 1fr) 90px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Skatt i tall</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 10</span>
+        <h1 class="display">Hvor går skattepengene?</h1>
+        <p class="muted">Stat og kommune brukte til sammen <b id="lead-total"></b> i <span class="ly"></span> – <b id="lead-pc"></b> per innbygger. Her ser du hva pengene går til, hvordan det har endret seg, og hvem som betaler for hva.</p>
+      </div>
+      <div class="field">
+        <span class="label" id="kr-label">Kroneverdi</span>
+        <div class="seg" role="group" aria-labelledby="kr-label" id="real">
+          <button data-v="nom" aria-pressed="false">Løpende kroner</button>
+          <button data-v="real" aria-pressed="true" id="real-btn">Faste kroner</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="card calc">
+      <div>
+        <span class="eyebrow">Din skattekvittering</span>
+        <h2 class="display">Hva går din skatt til?</h2>
+        <p class="muted" style="margin:0;font-size:14px">Skriv inn hvor mye du betalte i skatt (står i skatteoppgjøret). Beløpet fordeles slik de offentlige utgiftene fordelte seg i <span class="ly"></span>.</p>
+        <label class="amount"><input id="tax" type="text" inputmode="numeric" value="150 000" aria-label="Din skatt i kroner"><span>kr</span></label>
+        <div class="quick"><button data-v="50000">50 000</button><button data-v="150000">150 000</button><button data-v="300000">300 000</button><button data-v="1000000">1 mill.</button></div>
+        <p class="faint" style="font-size:12px;margin-top:14px">Forenklet: Offentlige utgifter finansieres også av oljepenger, avgifter og andre inntekter. Kvitteringen viser hvordan en krone til fellesskapet i snitt blir brukt.</p>
+      </div>
+      <div class="receipt" id="receipt"></div>
+    </section>
+
+    <h2 class="display section-title">Alle utgiftene</h2>
+    <p class="section-lead">Arealet viser hvor mye som går til hvert formål. Klikk på et område for å se underformålene.</p>
+    <section class="card panel">
+      <div class="controls">
+        <div class="field"><label for="year">År</label><select id="year" class="select"></select></div>
+        <div class="field">
+          <span class="label" id="sec-label">Hvem betaler</span>
+          <div class="seg" role="group" aria-labelledby="sec-label" id="sector">
+            <button data-v="off" aria-pressed="true">Stat og kommune</button>
+            <button data-v="stat" aria-pressed="false">Staten</button>
+            <button data-v="komm" aria-pressed="false">Kommunene</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="unit-label">Vis</span>
+          <div class="seg" role="group" aria-labelledby="unit-label" id="unit">
+            <button data-v="tot" aria-pressed="true">Totalt</button>
+            <button data-v="pc" aria-pressed="false">Per innbygger</button>
+          </div>
+        </div>
+      </div>
+      <div class="legend" id="tm-legend" style="margin-top:16px"></div>
+      <div class="crumbs" id="crumbs" style="margin-top:10px"></div>
+      <div class="chart" id="tm"></div>
+    </section>
+
+    <h2 class="display section-title">Hva har vokst?</h2>
+    <p class="section-lead">Utgifter per innbygger i faste kroner, etter hovedområde.</p>
+    <section class="card panel">
+      <div class="legend" id="c2-legend"></div>
+      <div class="chart" id="c2"></div>
+    </section>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="gr-title"></h2><p>Endring i utgifter per innbygger, faste kroner. Klikk på en kolonne i tabellen for å sortere.</p></div>
+        <div class="field"><label for="from">Fra år</label><select id="from" class="select"></select></div>
+      </div>
+      <div id="growth"></div>
+    </section>
+
+    <h2 class="display section-title">Stat eller kommune?</h2>
+    <p class="section-lead">Hvem står for utgiftene innen hvert formål? Statens overføringer til kommunene er holdt utenfor, slik at hver krone bare telles én gang.</p>
+    <section class="card panel split">
+      <div class="legend" id="sp-legend" style="margin-bottom:10px"></div>
+      <div id="split"></div>
+    </section>
+
+    <h2 class="display section-title">Lønn, innkjøp eller utbetalinger?</h2>
+    <p class="section-lead">Hva slags utgifter det er: lønn til egne ansatte, kjøp av varer og tjenester, penger direkte til husholdninger, eller investeringer.</p>
+    <section class="card panel">
+      <div class="controls"><div class="field"><label for="artf">Formål</label><select id="artf" class="select"></select></div></div>
+      <div class="legend" id="c4-legend" style="margin-top:14px"></div>
+      <div class="chart" id="c4"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle formål</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Om tallene</h3><p>Offentlig forvaltnings utgifter etter formål (COFOG) fra nasjonalregnskapet, SSB tabell 14669. «Stat og kommune» er konsolidert, slik at overføringer mellom staten og kommunene ikke telles to ganger. Faste kroner er justert med konsumprisindeksen.</p></div>
+      <div><h3>Sosial beskyttelse</h3><p>Den største posten omfatter alderspensjon, uføretrygd, sykepenger, barnetrygd, foreldrepenger, dagpenger, bostøtte og sosialhjelp – og pleie og omsorg for eldre og funksjonshemmede.</p></div>
+      <div><h3>Se også</h3><p><a href="oljepenger.html">Oljepengene</a> viser hvor mye av utgiftene som dekkes av overføringer fra oljefondet, og <a href="alder.html">Aldersbølgen</a> viser hvorfor pensjoner og pleie vokser.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Statistisk sentralbyrå, tabell <a href="https://www.ssb.no/statbank/table/14669/">14669</a>, 05803 og 03014</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/utgifter.js"></script>
+</body>
+</html>

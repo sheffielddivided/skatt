@@ -125,7 +125,7 @@ button, input, select { font: inherit; color: inherit; }
   max-width: 1440px; margin: 0 auto; padding: 12px 24px;
   display: flex; align-items: center; gap: 20px;
 }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 650; letter-spacing: -.01em; }
+.brand { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0; text-decoration: none; color: var(--text); font-weight: 650; letter-spacing: -.01em; }
 .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--text); display: grid; place-items: center; }
 .brand-mark svg { width: 16px; height: 16px; }
 .brand-mark svg rect { fill: var(--bg); }

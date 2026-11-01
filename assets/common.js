@@ -25,7 +25,25 @@
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", fireTheme);
   }
 
+  // ---------- Felles meny ----------
+  const STUDIES = [
+    ["./", "Oversikt"], ["kart.html", "Skattekartet"], ["utgifter.html", "Skattepengene"], ["oljepenger.html", "Oljepengene"],
+    ["petroleum.html", "Petroleumsskatten"], ["formue.html", "Formuesskatten"], ["eiendomsskatt.html", "Eiendomsskatten"],
+    ["profil.html", "Kommuneprofilen"], ["naering.html", "Næringslivet"], ["alder.html", "Aldersbølgen"],
+    ["befolkning.html", "Befolkningen"], ["ulikhet.html", "Ulikhet"],
+  ];
+  function renderNav() {
+    const nav = document.querySelector("nav.nav");
+    if (!nav) return;
+    const page = location.pathname.split("/").pop() || "./";
+    const cur = page === "index.html" ? "./" : page;
+    nav.innerHTML = STUDIES.map(([href, name]) => `<a href="${href}"${href === cur ? ' aria-current="page"' : ""}>${name}</a>`).join("");
+    const active = nav.querySelector('[aria-current="page"]');
+    if (active && active.offsetLeft + active.offsetWidth > nav.clientWidth) nav.scrollLeft = active.offsetLeft - 40;
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    renderNav();
     const btn = document.getElementById("theme-toggle");
     if (btn) {
       btn.addEventListener("click", () => {

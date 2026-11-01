@@ -82,7 +82,7 @@
       <div>
         <span class="eyebrow">Åpne data · Statistisk sentralbyrå</span>
         <h1 class="display">Hvor kommer <em>skatten</em> fra?</h1>
-        <p class="lead">Interaktive studier av norsk skatteinngang – fra hver enkelt kommune til sokkelen i Nordsjøen. Alle tall hentes fra SSBs skatteregnskap og oppdateres jevnlig.</p>
+        <p class="lead">Interaktive studier av norsk skatt og offentlig pengebruk – fra hver enkelt kommune til sokkelen i Nordsjøen og oljefondet. Alle tall hentes fra SSBs skatteregnskap og oppdateres jevnlig.</p>
       </div>
       <div class="stats" id="stats" aria-live="polite">
         <div class="card stat"><div class="l">Skatteinngang i alt</div><div class="v">–</div><div class="s">&nbsp;</div></div>
@@ -104,6 +104,24 @@
           <h3 class="display">Skattekartet</h3>
           <p>Skatteinngang i alle landets kommuner og fylker, totalt eller per innbygger, for hvert år siden 2008. Velg skattearter, sammenlign med året før og klikk deg inn på hver kommune.</p>
           <div class="meta"><span class="pill">SSB 07022</span><span class="pill">SSB 11342</span><span class="go">Åpne kartet →</span></div>
+        </div>
+      </a>
+      <a class="card study" href="utgifter.html">
+        <div class="thumb" id="thumb-utg" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 10 · Offentlige utgifter</span>
+          <h3 class="display">Hvor går skattepengene?</h3>
+          <p>Hva stat og kommune bruker pengene på – fra pensjoner og sykehus til forsvar og bistand. Med skattekvittering: se hva din skatt går til.</p>
+          <div class="meta"><span class="pill">SSB 14669</span><span class="go">Se kvitteringen →</span></div>
+        </div>
+      </a>
+      <a class="card study" href="oljepenger.html">
+        <div class="thumb" id="thumb-olje" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 11 · Statsbudsjettet</span>
+          <h3 class="display">Oljepengene</h3>
+          <p>Petroleumsinntekter inn i fondet, oljepenger ut til budsjettet – og hvor stor del av fellesskapets utgifter som betales med oljepenger.</p>
+          <div class="meta"><span class="pill">SSB 14668</span><span class="pill">SSB 14722</span><span class="go">Følg pengene →</span></div>
         </div>
       </a>
       <a class="card study" href="petroleum.html">
@@ -187,8 +205,8 @@
           <h3 class="display">Flere studier</h3>
           <p>Nettstedet er bygget for å vokse. Mulige neste studier:</p>
           <ul class="soon-list">
-            <li>Statens inntekter måned for måned (SSB 07107)</li>
-            <li>Kommuneøkonomi og frie inntekter (KOSTRA)</li>
+            <li>Kommunenes pengebruk per tjeneste (KOSTRA)</li>
+            <li>Statsbudsjett mot regnskap</li>
             <li>Elbiler og bilavgifter (SSB 07832)</li>
           </ul>
         </div>
@@ -388,8 +406,35 @@
       rows.forEach((r, i) => svg.append("rect").attr("x", m.l).attr("y", y(r.n.code)).attr("height", y.bandwidth()).attr("width", x(r.v)).attr("rx", 2).attr("fill", i ? "var(--series-1)" : "var(--series-2)"));
       svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text(`Største næringer, ${na.years[last]}`);
     }
-    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa();
-    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); });
+    const [utg, olje] = await Promise.all([fetch("data/utgifter.json").then((r) => r.json()), fetch("data/oljepenger.json").then((r) => r.json())]);
+    function drawUtg() {
+      const el = document.getElementById("thumb-utg");
+      el.innerHTML = "";
+      const w = 400, h = 230, i = utg.years.length - 1;
+      const col = { "10": 1, "07": 2, "09": 3, "02": 4, "03": 4, "04": 5, "05": 5, "06": 5, "01": 6, "08": 7 };
+      const root = d3.hierarchy({ children: utg.formaal.filter((f) => f.code.length === 2).map((f) => ({ code: f.code, value: Math.max(0, f.off[i]) })) }).sum((x) => x.value || 0).sort((a, b) => b.value - a.value);
+      d3.treemap().size([w - 40, h - 46]).paddingInner(2)(root);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("g").attr("transform", "translate(20,30)").selectAll("rect").data(root.leaves()).join("rect").attr("x", (n) => n.x0).attr("y", (n) => n.y0).attr("width", (n) => n.x1 - n.x0).attr("height", (n) => n.y1 - n.y0).attr("rx", 2).attr("fill", (n) => `var(--series-${col[n.data.code]})`).attr("fill-opacity", 0.8);
+      svg.append("text").attr("x", 20).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text(`Offentlige utgifter etter formål, ${utg.years[i]}`);
+    }
+    function drawOlje() {
+      const el = document.getElementById("thumb-olje");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { t: 30, r: 24, b: 12, l: 24 };
+      const z = (v) => v || 0;
+      const rows = olje.years.map((y, i) => { const p = z(olje.petro_skatt[i]) + z(olje.petro_avgift[i]) + z(olje.equinor[i]) + z(olje.sdoe[i]); const f = z(olje.spu_renter[i]) + z(olje.spu_utbytte[i]); return { y, p, u: -(olje.overskudd[i] - p - f) }; }).filter((r) => r.y >= 1997);
+      const x = d3.scaleBand(rows.map((r) => r.y), [m.l, w - m.r]).padding(0.2);
+      const y = d3.scaleLinear([d3.min(rows, (r) => -r.u), d3.max(rows, (r) => r.p)], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      rows.forEach((r) => {
+        svg.append("rect").attr("x", x(r.y)).attr("width", x.bandwidth()).attr("y", y(r.p)).attr("height", y(0) - y(r.p)).attr("fill", "var(--series-1)");
+        svg.append("rect").attr("x", x(r.y)).attr("width", x.bandwidth()).attr("y", y(Math.max(0, -r.u))).attr("height", Math.abs(y(0) - y(-r.u))).attr("fill", "var(--series-2)");
+      });
+      svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text("Inn i fondet (blått) og oljepengebruk (oransje)");
+    }
+    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); });
   })();
   </script>
 </body>
