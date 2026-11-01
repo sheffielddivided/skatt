@@ -7,6 +7,15 @@
   const S = window.Skatt;
   const RAMP_L = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
   const RAMP_D = ["#0d366b", "#104281", "#1c5cab", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"];
+  const DIV_L = ["#a52f2f", "#e34948", "#f2a3a2", "#e5e3dd", "#9ec5f4", "#3987e5", "#184f95"];
+  const DIV_D = ["#e66767", "#b33b3b", "#6b2e2d", "#3a3a37", "#1c4a80", "#2a78d6", "#86b6ef"];
+  /** Symmetriske terskler rundt 0 basert på 90-persentilen av |v|, avrundet til «pene» tall. */
+  function divThresholds(vs) {
+    const a = d3.quantile(vs.map(Math.abs).sort(d3.ascending), 0.9) || 1;
+    const nice = (x) => { const p = Math.pow(10, Math.floor(Math.log10(x))); const m = x / p; return (m >= 5 ? 5 : m >= 2 ? 2 : 1) * p; };
+    const hi = nice(a), mid = nice(a / 3), lo = nice(a / 10);
+    return [-hi, -mid, -lo, lo, mid, hi];
+  }
 
   function choropleth(el, topo, opts = {}) {
     const tip = S.tooltip();
@@ -69,12 +78,19 @@
       const lg = el.querySelector(".choro-legend");
       const vs = Object.entries(state.values).filter(([id, v]) => v != null && !out(id)).map((e) => e[1]);
       if (!vs.length) { lg.innerHTML = ""; return; }
-      const q = state.scale.quantiles();
-      const ext = d3.extent(vs);
-      const t = [ext[0], ...q, ext[1]];
       const f = state.short || state.fmt;
+      let labels;
+      if (state.diverging) {
+        const t = state.scale.domain();
+        labels = state.scale.range().map((c, i) => (i === 0 ? `under ${f(t[0])}` : i === t.length ? `over ${f(t[t.length - 1])}` : `${f(t[i - 1])} – ${f(t[i])}`));
+      } else {
+        const q = state.scale.quantiles();
+        const ext = d3.extent(vs);
+        const t = [ext[0], ...q, ext[1]];
+        labels = state.scale.range().map((c, i) => `${f(t[i])} – ${f(t[i + 1])}`);
+      }
       lg.innerHTML = `<div class="lt">${S.escapeHtml(state.title || "")}</div>` + state.scale.range().map((c, i) => ({ c, i })).reverse()
-        .map(({ c, i }) => `<div class="bin" data-c="${c}"><span class="sw" style="background:${c}"></span><span>${f(t[i])} – ${f(t[i + 1])}</span></div>`).join("");
+        .map(({ c, i }) => `<div class="bin" data-c="${c}"><span class="sw" style="background:${c}"></span><span>${labels[i]}</span></div>`).join("");
       lg.querySelectorAll(".bin").forEach((b) => {
         b.onmouseenter = () => regions.classed("dim", (d) => color(d.properties.id) !== b.dataset.c);
         b.onmouseleave = () => regions.classed("dim", false);
@@ -86,7 +102,7 @@
       state = { ...state, ...o };
       const ramp = S.isDark() ? RAMP_D : RAMP_L;
       const vs = Object.entries(state.values).filter(([id, v]) => v != null && isFinite(v) && !out(id)).map((e) => e[1]);
-      state.scale = d3.scaleQuantile(vs, ramp);
+      state.scale = state.diverging ? d3.scaleThreshold(divThresholds(vs), S.isDark() ? DIV_D : DIV_L) : d3.scaleQuantile(vs, ramp);
       regions.attr("fill", (d) => color(d.properties.id)).classed("out", (d) => out(d.properties.id));
       gS.selectAll("*").remove();
       if (state.fylke && byF[state.fylke]) gS.append("path").attr("class", "choro-focus").attr("d", path(byF[state.fylke]));
