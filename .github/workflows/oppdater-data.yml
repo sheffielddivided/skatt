@@ -17,7 +17,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Hent data
-        run: python scripts/build_data.py
+        run: |
+          python scripts/build_data.py
+          python scripts/build_demografi.py
+          python scripts/build_profil.py
       - name: Commit hvis endret
         run: |
           if git diff --quiet -- data; then
