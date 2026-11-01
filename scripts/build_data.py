@@ -270,7 +270,7 @@ def main():
                 series[f"{o}:{a}"] = vals
     kpi = Cube(query("03014", {"Konsumgrp": ["TOTAL"], "ContentsCode": ["KpiAar"], "Tid": "*"}))
     kpi_map = {int(t): kpi.get(Konsumgrp="TOTAL", ContentsCode="KpiAar", Tid=t) for t in kpi.cats("Tid")}
-    kpi_map = {y: v for y, v in kpi_map.items() if v is not None and y >= 2000}
+    kpi_map = {y: v for y, v in kpi_map.items() if v is not None and y >= 1979}
     out2 = {
         "source": "SSB tabell 07391 og 03014",
         "updated": c.updated,

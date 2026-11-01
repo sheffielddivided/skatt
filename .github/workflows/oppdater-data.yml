@@ -25,6 +25,7 @@ jobs:
           python scripts/build_ulikhet.py
           python scripts/build_eiendom.py
           python scripts/build_naering.py
+          python scripts/build_offentlig.py
       - name: Commit hvis endret
         run: |
           if git diff --quiet -- data; then

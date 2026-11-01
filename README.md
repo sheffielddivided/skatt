@@ -9,6 +9,8 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | --- | --- | --- |
 | `index.html` | Landingsside med nøkkeltall og oversikt over studier | – |
 | `kart.html` | **Skattekartet** – zoombart kart over kommuner/fylker, totalt, per innbygger eller endring, valgfrie skattearter, filter per fylke (zoomer inn), detaljpanel med tidsserie | SSB 07022, 11342, Klass 131, Kartverket |
+| `utgifter.html` | **Hvor går skattepengene?** – skattekvittering, flisekart over offentlige utgifter etter formål, utvikling, stat mot kommune og type utgift | SSB 14669 |
+| `oljepenger.html` | **Oljepengene** – petroleumsinntekter inn, oljepengebruk ut, andel av fastlands-BNP og statens utgifter, fondets avkastning og statens finansformue | SSB 14668, 14722, 07511, 09189, 10486 |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
 | `eiendomsskatt.html` | **Eiendomsskatten** – inntekter fra bolig, fritid, kraft og næring siden 2007, ordninger, satser og enebolig-eksempel per kommune | SSB 14674, 14155 |
 | `naering.html` | **Næringslivet** – sysselsatte etter næring per kommune 2008–, spesialisering, pendling og sammenheng med skatt | SSB 13470 |
@@ -31,6 +33,7 @@ python3 scripts/build_befolkning.py  # befolkningsendringer og flytting etter la
 python3 scripts/build_ulikhet.py     # inntektsulikhet (SSB + FHI)
 python3 scripts/build_eiendom.py     # eiendomsskatt (KOSTRA)
 python3 scripts/build_naering.py     # sysselsatte etter næring
+python3 scripts/build_offentlig.py   # offentlige utgifter og oljepenger
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.
@@ -48,7 +51,7 @@ Kartgrunnlaget `data/norge-2024.topo.json` er forenklet fra Kartverkets kommuneg
 
 ## Legge til en ny studie
 
-1. Lag en ny HTML-side med samme topplinje (kopier fra en eksisterende side) og legg den til i navigasjonen.
+1. Lag en ny HTML-side med samme topplinje (kopier fra en eksisterende side). Menyen bygges automatisk fra listen `STUDIES` i `assets/common.js` – legg den nye siden til der.
 2. Utvid `scripts/build_data.py` med datauttrekket.
 3. Legg til et kort i `index.html`.
 
