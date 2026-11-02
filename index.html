@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Skatt i tall</title>
-  <meta name="description" content="Visuelle studier av norsk skatt basert på åpne data fra Statistisk sentralbyrå.">
+  <title>Felleskassen – skatt, velferd og samfunn i tall</title>
+  <meta name="description" content="Felleskassen: interaktive studier av norsk skatt, offentlig pengebruk, kommuner, befolkning og Norge i Europa, basert på åpne data fra SSB, FHI, Eurostat og OECD.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +24,11 @@
     .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 56px 0 18px; }
     .section-head h2 { font-size: 28px; }
     .studies { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+    .filters button { border: 1px solid var(--border); background: var(--surface); padding: 5px 12px; border-radius: 999px; font-size: 13.5px; cursor: pointer; color: var(--text-2); }
+    .filters button:hover { border-color: var(--border-strong); color: var(--text); }
+    .filters button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .study[hidden] { display: none; }
     .study { display: flex; flex-direction: column; overflow: hidden; text-decoration: none; color: inherit; transition: transform .2s ease, box-shadow .2s ease, border-color .2s; }
     a.study:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 2px 4px rgba(0,0,0,.05), 0 18px 40px rgba(0,0,0,.09); }
     .study .thumb { height: 230px; background: var(--surface-2); border-bottom: 1px solid var(--border); display: grid; place-items: center; position: relative; overflow: hidden; }
@@ -56,7 +61,7 @@
     <div class="topbar-inner">
       <a class="brand" href="./">
         <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
-        <span class="brand-text">Skatt i tall</span>
+        <span class="brand-text">Felleskassen</span>
       </a>
       <nav class="nav" aria-label="Studier">
         <a href="./" aria-current="page">Oversikt</a>
@@ -80,9 +85,9 @@
   <main class="container">
     <section class="hero">
       <div>
-        <span class="eyebrow">Åpne data · Statistisk sentralbyrå</span>
-        <h1 class="display">Hvor kommer <em>skatten</em> fra?</h1>
-        <p class="lead">Interaktive studier av norsk skatt og offentlig pengebruk – fra hver enkelt kommune til sokkelen i Nordsjøen og oljefondet. Alle tall hentes fra SSBs skatteregnskap og oppdateres jevnlig.</p>
+        <span class="eyebrow">Felleskassen · Skatt, velferd og samfunn i tall</span>
+        <h1 class="display">Hvor kommer <em>pengene</em> fra – og hvor går de?</h1>
+        <p class="lead">Felleskassen er interaktive studier av norsk skatt, offentlig pengebruk, kommuner, befolkning og Norge sammenlignet med Europa – fra hver enkelt kommune til sokkelen i Nordsjøen og oljefondet. Alle tall hentes fra åpne kilder (SSB, FHI, Eurostat og OECD) og oppdateres jevnlig.</p>
       </div>
       <div class="stats" id="stats" aria-live="polite">
         <div class="card stat"><div class="l">Skatteinngang i alt</div><div class="v">–</div><div class="s">&nbsp;</div></div>
@@ -94,10 +99,12 @@
 
     <div class="section-head">
       <h2 class="display">Studier</h2>
-      <span class="faint">Velg en studie for å utforske</span>
+      <div class="filters" id="filters" role="group" aria-label="Filtrer etter tema">
+        <button data-g="" aria-pressed="true">Alle</button><button data-g="skatt" aria-pressed="false">Skatt</button><button data-g="pengebruk" aria-pressed="false">Pengebruk</button><button data-g="kommuner" aria-pressed="false">Kommuner</button><button data-g="befolkning" aria-pressed="false">Befolkning</button><button data-g="internasjonalt" aria-pressed="false">Internasjonalt</button>
+      </div>
     </div>
     <section class="studies">
-      <a class="card study" href="kart.html">
+      <a class="card study" data-g="skatt" href="kart.html">
         <div class="thumb" id="thumb-map" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 1 · Kommuner og fylker</span>
@@ -106,34 +113,7 @@
           <div class="meta"><span class="pill">SSB 07022</span><span class="pill">SSB 11342</span><span class="go">Åpne kartet →</span></div>
         </div>
       </a>
-      <a class="card study" href="utgifter.html">
-        <div class="thumb" id="thumb-utg" aria-hidden="true"></div>
-        <div class="body">
-          <span class="eyebrow">Studie 10 · Offentlige utgifter</span>
-          <h3 class="display">Hvor går skattepengene?</h3>
-          <p>Hva stat og kommune bruker pengene på – fra pensjoner og sykehus til forsvar og bistand. Med skattekvittering: se hva din skatt går til.</p>
-          <div class="meta"><span class="pill">SSB 14669</span><span class="go">Se kvitteringen →</span></div>
-        </div>
-      </a>
-      <a class="card study" href="oljepenger.html">
-        <div class="thumb" id="thumb-olje" aria-hidden="true"></div>
-        <div class="body">
-          <span class="eyebrow">Studie 11 · Statsbudsjettet</span>
-          <h3 class="display">Oljepengene</h3>
-          <p>Petroleumsinntekter inn i fondet, oljepenger ut til budsjettet – og hvor stor del av fellesskapets utgifter som betales med oljepenger.</p>
-          <div class="meta"><span class="pill">SSB 14668</span><span class="pill">SSB 14722</span><span class="go">Følg pengene →</span></div>
-        </div>
-      </a>
-      <a class="card study" href="europa.html">
-        <div class="thumb" id="thumb-eu" aria-hidden="true"></div>
-        <div class="body">
-          <span class="eyebrow">Studie 12 · Internasjonalt</span>
-          <h3 class="display">Norge i Europa</h3>
-          <p>Skattenivå, offentlige utgifter, inntekt, sparing, boligeie, sysselsetting, sykefravær, trygd og innvandring – Norge sammenlignet med 29 europeiske land.</p>
-          <div class="meta"><span class="pill">Eurostat</span><span class="pill">OECD</span><span class="go">Sammenlign →</span></div>
-        </div>
-      </a>
-      <a class="card study" href="petroleum.html">
+      <a class="card study" data-g="skatt" href="petroleum.html">
         <div class="thumb" id="thumb-petro" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 2 · Tidsserie</span>
@@ -142,7 +122,7 @@
           <div class="meta"><span class="pill">SSB 07391</span><span class="pill">SSB 03014</span><span class="go">Se utviklingen →</span></div>
         </div>
       </a>
-      <a class="card study" href="formue.html">
+      <a class="card study" data-g="skatt" href="formue.html">
         <div class="thumb" id="thumb-formue" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 3 · Tidsserie og kommuner</span>
@@ -151,7 +131,7 @@
           <div class="meta"><span class="pill">SSB 10333</span><span class="pill">SSB 08231</span><span class="pill">SSB 09201</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
-      <a class="card study" href="profil.html">
+      <a class="card study" data-g="kommuner" href="profil.html">
         <div class="thumb" id="thumb-profil" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 4 · Sammenhenger</span>
@@ -160,7 +140,7 @@
           <div class="meta"><span class="pill">SSB</span><span class="pill">FHI / NAV</span><span class="go">Sammenlign →</span></div>
         </div>
       </a>
-      <a class="card study" href="alder.html">
+      <a class="card study" data-g="befolkning" href="alder.html">
         <div class="thumb" id="thumb-alder" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 5 · Befolkning</span>
@@ -169,7 +149,7 @@
           <div class="meta"><span class="pill">SSB 07459</span><span class="go">Se pyramidene →</span></div>
         </div>
       </a>
-      <a class="card study" href="befolkning.html">
+      <a class="card study" data-g="befolkning" href="befolkning.html">
         <div class="thumb" id="thumb-bef" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 6 · Befolkning</span>
@@ -178,7 +158,7 @@
           <div class="meta"><span class="pill">SSB 05803</span><span class="pill">SSB 05476</span><span class="pill">SSB 07822</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
-      <a class="card study" href="ulikhet.html">
+      <a class="card study" data-g="kommuner" href="ulikhet.html">
         <div class="thumb" id="thumb-ul" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 7 · Inntekt</span>
@@ -187,7 +167,7 @@
           <div class="meta"><span class="pill">SSB 07756</span><span class="pill">SSB 12558</span><span class="pill">FHI</span><span class="go">Se forskjellene →</span></div>
         </div>
       </a>
-      <a class="card study" href="eiendomsskatt.html">
+      <a class="card study" data-g="skatt" href="eiendomsskatt.html">
         <div class="thumb" id="thumb-ei" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 8 · Kommunal skatt</span>
@@ -196,13 +176,40 @@
           <div class="meta"><span class="pill">SSB 14674</span><span class="pill">SSB 14155</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
-      <a class="card study" href="naering.html">
+      <a class="card study" data-g="kommuner" href="naering.html">
         <div class="thumb" id="thumb-na" aria-hidden="true"></div>
         <div class="body">
           <span class="eyebrow">Studie 9 · Arbeid</span>
           <h3 class="display">Næringslivet</h3>
           <p>Hva lever kommunene av? Næringsprofil for hver kommune, spesialisering, pendling – og hvorfor havbruk, kraft og olje gir høy skatt.</p>
           <div class="meta"><span class="pill">SSB 13470</span><span class="go">Se næringene →</span></div>
+        </div>
+      </a>
+      <a class="card study" data-g="pengebruk" href="utgifter.html">
+        <div class="thumb" id="thumb-utg" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 10 · Offentlige utgifter</span>
+          <h3 class="display">Hvor går skattepengene?</h3>
+          <p>Hva stat og kommune bruker pengene på – fra pensjoner og sykehus til forsvar og bistand. Med skattekvittering: se hva din skatt går til.</p>
+          <div class="meta"><span class="pill">SSB 14669</span><span class="go">Se kvitteringen →</span></div>
+        </div>
+      </a>
+      <a class="card study" data-g="pengebruk" href="oljepenger.html">
+        <div class="thumb" id="thumb-olje" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 11 · Statsbudsjettet</span>
+          <h3 class="display">Oljepengene</h3>
+          <p>Petroleumsinntekter inn i fondet, oljepenger ut til budsjettet – og hvor stor del av fellesskapets utgifter som betales med oljepenger.</p>
+          <div class="meta"><span class="pill">SSB 14668</span><span class="pill">SSB 14722</span><span class="go">Følg pengene →</span></div>
+        </div>
+      </a>
+      <a class="card study" data-g="internasjonalt" href="europa.html">
+        <div class="thumb" id="thumb-eu" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 12 · Internasjonalt</span>
+          <h3 class="display">Norge i Europa</h3>
+          <p>Skattenivå, offentlige utgifter, inntekt, sparing, boligeie, sysselsetting, sykefravær, trygd og innvandring – Norge sammenlignet med 29 europeiske land.</p>
+          <div class="meta"><span class="pill">Eurostat</span><span class="pill">OECD</span><span class="go">Sammenlign →</span></div>
         </div>
       </a>
       <div class="card study soon">
@@ -240,6 +247,12 @@
   </footer>
 
   <script>
+  document.querySelectorAll("#filters button").forEach((b) => b.addEventListener("click", () => {
+    const g = b.dataset.g;
+    document.querySelectorAll("#filters button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll(".study[data-g]").forEach((c) => (c.hidden = !!g && c.dataset.g !== g));
+    document.querySelector(".study.soon").hidden = !!g;
+  }));
   (async function () {
     const S = window.Skatt;
     const [ord, reg, topo] = await Promise.all([

@@ -1,4 +1,4 @@
-/* Felles hjelpefunksjoner for Skatt i tall */
+/* Felles hjelpefunksjoner for Felleskassen */
 (function () {
   const root = document.documentElement;
 
@@ -26,20 +26,67 @@
   }
 
   // ---------- Felles meny ----------
-  const STUDIES = [
-    ["./", "Oversikt"], ["kart.html", "Skattekartet"], ["utgifter.html", "Skattepengene"], ["oljepenger.html", "Oljepengene"], ["europa.html", "Norge i Europa"],
-    ["petroleum.html", "Petroleumsskatten"], ["formue.html", "Formuesskatten"], ["eiendomsskatt.html", "Eiendomsskatten"],
-    ["profil.html", "Kommuneprofilen"], ["naering.html", "Næringslivet"], ["alder.html", "Aldersbølgen"],
-    ["befolkning.html", "Befolkningen"], ["ulikhet.html", "Ulikhet"],
+  const SITE = { name: "Felleskassen", tagline: "Skatt, velferd og samfunn i tall" };
+  const MENU = [
+    { group: "Skatt", items: [
+      ["kart.html", "Skattekartet", "Skatteinngang i kommuner og fylker"],
+      ["petroleum.html", "Petroleumsskatten", "Skatt fra olje og gass over tid"],
+      ["formue.html", "Formuesskatten", "Formuesskatt og utflytting"],
+      ["eiendomsskatt.html", "Eiendomsskatten", "Kommunenes egen skatt"],
+    ] },
+    { group: "Pengebruk", items: [
+      ["utgifter.html", "Hvor går skattepengene?", "Offentlige utgifter etter formål"],
+      ["oljepenger.html", "Oljepengene", "Inn i fondet og ut i budsjettet"],
+    ] },
+    { group: "Kommuner", items: [
+      ["profil.html", "Kommuneprofilen", "Sammenhenger mellom 21 indikatorer"],
+      ["naering.html", "Næringslivet", "Hva kommunene lever av"],
+      ["ulikhet.html", "Inntektsulikhet", "Forskjeller og lavinntekt"],
+    ] },
+    { group: "Befolkning", items: [
+      ["alder.html", "Aldersbølgen", "Befolkningspyramider 1986–i dag"],
+      ["befolkning.html", "Befolkningsutviklingen", "Fødsler, innvandring og flytting"],
+    ] },
+    { group: "Internasjonalt", items: [
+      ["europa.html", "Norge i Europa", "Norge sammenlignet med 29 land"],
+    ] },
   ];
+  const STUDIES = [["./", "Oversikt"], ...MENU.flatMap((g) => g.items.map(([h, n]) => [h, n]))];
+  const chevron = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
   function renderNav() {
+    document.querySelectorAll(".brand-text").forEach((b) => (b.textContent = SITE.name));
     const nav = document.querySelector("nav.nav");
     if (!nav) return;
     const page = location.pathname.split("/").pop() || "./";
     const cur = page === "index.html" ? "./" : page;
-    nav.innerHTML = STUDIES.map(([href, name]) => `<a href="${href}"${href === cur ? ' aria-current="page"' : ""}>${name}</a>`).join("");
-    const active = nav.querySelector('[aria-current="page"]');
-    if (active && active.offsetLeft + active.offsetWidth > nav.clientWidth) nav.scrollLeft = active.offsetLeft - 40;
+    const link = ([h, n, desc]) => `<a href="${h}"${h === cur ? ' aria-current="page"' : ""}><span>${n}</span>${desc ? `<small>${desc}</small>` : ""}</a>`;
+    nav.innerHTML = `<a class="top" href="./"${cur === "./" ? ' aria-current="page"' : ""}>Oversikt</a>` + MENU.map((g, k) => {
+      const active = g.items.some(([h]) => h === cur);
+      return `<div class="dd${active ? " active" : ""}"><button class="dd-btn" aria-expanded="false" aria-controls="dd-${k}">${g.group}${chevron}</button><div class="dd-menu card" id="dd-${k}" role="menu">${g.items.map(link).join("")}</div></div>`;
+    }).join("");
+    const closeAll = (except) => nav.querySelectorAll(".dd").forEach((d) => { if (d !== except) { d.classList.remove("open"); d.querySelector(".dd-btn").setAttribute("aria-expanded", "false"); } });
+    nav.querySelectorAll(".dd").forEach((dd) => {
+      const btn = dd.querySelector(".dd-btn");
+      btn.addEventListener("click", (e) => { e.stopPropagation(); const open = !dd.classList.contains("open"); closeAll(dd); dd.classList.toggle("open", open); btn.setAttribute("aria-expanded", String(open)); });
+    });
+    document.addEventListener("click", () => closeAll());
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeAll(); closeDrawer(); } });
+
+    // Mobilmeny
+    const bar = nav.parentElement;
+    const burger = document.createElement("button");
+    burger.className = "icon-btn burger";
+    burger.setAttribute("aria-label", "Meny");
+    burger.setAttribute("aria-expanded", "false");
+    burger.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+    bar.appendChild(burger);
+    const drawer = document.createElement("div");
+    drawer.className = "drawer";
+    drawer.hidden = true;
+    drawer.innerHTML = `<div class="drawer-inner">${link(["./", "Oversikt"])}${MENU.map((g) => `<div class="dg"><div class="eyebrow">${g.group}</div>${g.items.map(link).join("")}</div>`).join("")}</div>`;
+    document.querySelector(".topbar").appendChild(drawer);
+    function closeDrawer() { drawer.hidden = true; burger.setAttribute("aria-expanded", "false"); document.body.classList.remove("no-scroll"); }
+    burger.addEventListener("click", (e) => { e.stopPropagation(); const open = drawer.hidden; drawer.hidden = !open; burger.setAttribute("aria-expanded", String(open)); document.body.classList.toggle("no-scroll", open); });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -145,5 +192,5 @@
     return { update(newRows) { rows = newRows; render(); } };
   }
 
-  window.Skatt = { isDark, onThemeChange, mill, kr, int, pct, signed, nf0, nf1, MONTHS, MONTHS_SHORT, tooltip, escapeHtml, downloadCsv, sortableTable };
+  window.Skatt = { SITE, MENU, isDark, onThemeChange, mill, kr, int, pct, signed, nf0, nf1, MONTHS, MONTHS_SHORT, tooltip, escapeHtml, downloadCsv, sortableTable };
 })();
