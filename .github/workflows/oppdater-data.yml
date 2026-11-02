@@ -27,6 +27,7 @@ jobs:
           python scripts/build_naering.py
           python scripts/build_offentlig.py
           python scripts/build_europa.py
+          python scripts/build_hverdag.py
       - name: Commit hvis endret
         run: |
           if git diff --quiet -- data; then

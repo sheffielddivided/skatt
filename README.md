@@ -12,6 +12,7 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `utgifter.html` | **Hvor går skattepengene?** – skattekvittering, flisekart over offentlige utgifter etter formål, utvikling, stat mot kommune og type utgift | SSB 14669 |
 | `oljepenger.html` | **Oljepengene** – petroleumsinntekter inn, oljepengebruk ut, andel av fastlands-BNP og statens utgifter, fondets avkastning og statens finansformue | SSB 14668, 14722, 07511, 09189, 10486 |
 | `europa.html` | **Norge i Europa** – Norges profil på 22 indikatorer mot EU-landene, Sveits og Island: rangering, kart, tidsserier og sammenhenger | Eurostat, OECD, SSB 12880 |
+| `hverdag.html` | **Leger, lærere og våpen** – hverdagen i Europa: helsepersonell, skole og barnehage, biler og elbiler, trygghet, strømpris m.m. Samme motor som `europa.html` | Eurostat, Small Arms Survey |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
 | `eiendomsskatt.html` | **Eiendomsskatten** – inntekter fra bolig, fritid, kraft og næring siden 2007, ordninger, satser og enebolig-eksempel per kommune | SSB 14674, 14155 |
 | `naering.html` | **Næringslivet** – sysselsatte etter næring per kommune 2008–, spesialisering, pendling og sammenheng med skatt | SSB 13470 |
@@ -36,6 +37,7 @@ python3 scripts/build_eiendom.py     # eiendomsskatt (KOSTRA)
 python3 scripts/build_naering.py     # sysselsatte etter næring
 python3 scripts/build_offentlig.py   # offentlige utgifter og oljepenger
 python3 scripts/build_europa.py      # Norge i Europa (Eurostat + OECD)
+python3 scripts/build_hverdag.py     # Leger, lærere og våpen (Eurostat + Small Arms Survey)
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.
@@ -47,6 +49,8 @@ GitHub Actions-arbeidsflyten `.github/workflows/oppdater-data.yml` kjører skrip
 * Alle år er harmonisert til dagens kommuneinndeling (357 kommuner, 15 fylker) ved hjelp av SSBs endringskatalog (Klass 131).
   Sammenslåinger summeres; ved delinger fordeles tallene etter folketall.
 * Fylker = sum av kommunene. Kontinentalsokkelen, Svalbard og kildeskatt vises separat.
+
+Våpentallene `data/vapen-sas-2017.json` er hentet fra Small Arms Survey, «Civilian Firearms Holdings, 2017» (vedlegg til briefing paper, 2018).
 
 Europakartet `data/europa.topo.json` er forenklet fra Eurostat GISCO (© EuroGeographics).
 

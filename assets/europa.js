@@ -3,7 +3,7 @@
   const S = window.Skatt;
   const tip = S.tooltip();
   const [d, topo] = await Promise.all([
-    fetch("data/europa.json").then((r) => r.json()),
+    fetch(document.body.dataset.src || "data/europa.json").then((r) => r.json()),
     fetch("data/europa.topo.json").then((r) => r.json()),
   ]);
   const C = d.countries, EU = d.eu, NORD = new Set(d.nordic);
@@ -30,7 +30,7 @@
   rebuild();
   const GROUPS = [...new Set(RAW.map((i) => i.group))];
   const name = (g) => (g === EU ? "EU-snitt" : C[g] || g);
-  const fmt = (i, v) => (v == null ? "–" : (i.dec === 0 ? S.nf0 : i.dec === 2 ? { format: (x) => x.toFixed(2).replace(".", ",") } : S.nf1).format(v) + (i.unit.startsWith("%") ? " %" : i.unit === "PPS" || i.unit === "PPS per innb." ? " PPS" : i.unit === "euro per innb." ? " €" : ""));
+  const fmt = (i, v) => (v == null ? "–" : (i.dec === 0 ? S.nf0 : i.dec === 2 ? { format: (x) => x.toFixed(2).replace(".", ",") } : S.nf1).format(v) + (i.unit.startsWith("%") ? " %" : i.unit === "PPS" || i.unit === "PPS per innb." ? " PPS" : i.unit === "euro per innb." || i.unit === "euro per kWh" ? " €" : ""));
   const unitTxt = (i) => (i.unit.startsWith("%") || i.unit === "PPS" ? i.unit : i.unit);
   const lastYear = (i, g = "NO") => { const ys = Object.keys(i.values[g] || {}); return ys.length ? ys[ys.length - 1] : null; };
   const valAt = (i, g, y) => i.values[g]?.[y] ?? null;
@@ -38,7 +38,8 @@
   const latestUpTo = (i, g, y) => { const s = i.values[g]; if (!s) return null; const ys = Object.keys(s).filter((t) => t <= y); return ys.length ? { y: ys[ys.length - 1], v: s[ys[ys.length - 1]] } : null; };
 
   // ---------------------------------------------------------------- profil
-  const st = { ind: "skatt", yr: null, extra: "DE", sx: "skatt", sy: "utgifter" };
+  const DEF = d.defaults || { ind: "skatt", sx: "skatt", sy: "utgifter" };
+  const st = { ind: DEF.ind, yr: null, extra: "DE", sx: DEF.sx, sy: DEF.sy };
   (function readHash() { const h = new URLSearchParams(location.hash.slice(1)); if (IND[h.get("i")]) st.ind = h.get("i"); })();
   function score() {
     const el = document.getElementById("score");
@@ -183,11 +184,11 @@
   document.getElementById("csv").onclick = () => {
     const out = [["Indikator", "Enhet", "Kilde", "Land", "År", "Verdi"]];
     for (const i of RAW) for (const [g, s] of Object.entries(i.values)) for (const [y, v] of Object.entries(s)) out.push([i.name, i.unit, i.source, name(g), y, String(v).replace(".", ",")]);
-    S.downloadCsv("norge-i-europa.csv", out);
+    S.downloadCsv((document.body.dataset.src || "data/europa.json").split("/").pop().replace(".json", "") + ".csv", out);
   };
 
   // ---------------------------------------------------------------- spredningsplott
-  const PRESETS = [
+  const PRESETS = d.presets || [
     { l: "Skattenivå og offentlige utgifter", x: "skatt", y: "utgifter" },
     { l: "Sysselsetting og uføreutgifter", x: "syss", y: "ufore" },
     { l: "Inntekt og boligeie", x: "inntekt", y: "eie" },
@@ -247,6 +248,7 @@
     history.replaceState(null, "", "#i=" + st.ind);
   }
   const modeSeg = document.getElementById("mode");
+  if (!RAW.some((i) => i.unit === "% av BNP")) modeSeg.closest(".field").hidden = true;
   modeSeg.innerHTML = Object.entries(MODES).map(([k, l]) => `<button data-v="${k}" aria-pressed="${k === mode}">${l}</button>`).join("");
   modeSeg.querySelectorAll("button").forEach((b) => (b.onclick = () => {
     mode = b.dataset.v;
