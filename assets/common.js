@@ -49,6 +49,7 @@
     ] },
     { group: "Internasjonalt", items: [
       ["europa.html", "Norge i Europa", "Norge sammenlignet med 29 land"],
+      ["hverdag.html", "Leger, lærere og våpen", "Hverdagen i Europa – fra leger til biler"],
     ] },
   ];
   const STUDIES = [["./", "Oversikt"], ...MENU.flatMap((g) => g.items.map(([h, n]) => [h, n]))];
