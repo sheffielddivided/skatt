@@ -185,8 +185,13 @@ def main():
         n_no = len(clean.get("NO", {}))
         print(f"    {len(clean)} land, Norge: {n_no} år", file=sys.stderr)
         indicators.append({"key": key, "name": name, "group": group, "unit": unit, "dec": dec, "better": better, "source": src, "desc": desc, "values": clean})
+    # For omregning av «% av BNP» til per innbygger: BNP per innbygger i euro og prisnivåindeks (EU = 100)
+    gdp_pc, _ = eurostat("nama_10_pc", {"na_item": "B1GQ", "unit": "CP_EUR_HAB"})
+    pli, _ = eurostat("prc_ppp_ind", {"na_item": "PLI_EU27_2020", "ppp_cat": "GDP"})
     out = {
         "source": "Eurostat og OECD",
+        "gdp_pc_eur": gdp_pc,
+        "pli": pli,
         "updated": max(filter(None, updated)) if updated else None,
         "countries": COUNTRIES, "nordic": NORDIC, "eu": EU,
         "indicators": indicators,

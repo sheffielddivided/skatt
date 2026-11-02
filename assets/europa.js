@@ -7,10 +7,30 @@
     fetch("data/europa.topo.json").then((r) => r.json()),
   ]);
   const C = d.countries, EU = d.eu, NORD = new Set(d.nordic);
-  const IND = Object.fromEntries(d.indicators.map((i) => [i.key, i]));
-  const GROUPS = [...new Set(d.indicators.map((i) => i.group))];
+  // Målestokk: indikatorer i % av BNP kan vises per innbygger (euro eller kjøpekraftsjustert)
+  const RAW = d.indicators;
+  const MODES = { bnp: "Andel av BNP", eur: "Euro per innbygger", pps: "Kjøpekraftsjustert per innbygger" };
+  let mode = "bnp";
+  function view(i) {
+    if (mode === "bnp" || i.unit !== "% av BNP") return i;
+    const values = {};
+    for (const [g, ser] of Object.entries(i.values)) {
+      for (const [y, v] of Object.entries(ser)) {
+        const gdp = d.gdp_pc_eur[g]?.[y], pli = d.pli[g]?.[y];
+        if (v == null || gdp == null || (mode === "pps" && pli == null)) continue;
+        const eur = (v / 100) * gdp;
+        (values[g] ||= {})[y] = mode === "eur" ? eur : eur / (pli / 100);
+      }
+    }
+    return { ...i, values, unit: mode === "eur" ? "euro per innb." : "PPS per innb.", dec: 0, perCap: true,
+      desc: i.desc + (mode === "eur" ? " Her omregnet til euro per innbygger (andel av BNP × BNP per innbygger)." : " Her omregnet til kjøpekraftsjusterte enheter (PPS) per innbygger, slik at ulike prisnivåer er tatt hensyn til.") };
+  }
+  let INDS = RAW, IND = {};
+  function rebuild() { INDS = RAW.map(view); IND = Object.fromEntries(INDS.map((i) => [i.key, i])); }
+  rebuild();
+  const GROUPS = [...new Set(RAW.map((i) => i.group))];
   const name = (g) => (g === EU ? "EU-snitt" : C[g] || g);
-  const fmt = (i, v) => (v == null ? "–" : (i.dec === 0 ? S.nf0 : i.dec === 2 ? { format: (x) => x.toFixed(2).replace(".", ",") } : S.nf1).format(v) + (i.unit.startsWith("%") ? " %" : i.unit === "PPS" ? " PPS" : ""));
+  const fmt = (i, v) => (v == null ? "–" : (i.dec === 0 ? S.nf0 : i.dec === 2 ? { format: (x) => x.toFixed(2).replace(".", ",") } : S.nf1).format(v) + (i.unit.startsWith("%") ? " %" : i.unit === "PPS" || i.unit === "PPS per innb." ? " PPS" : i.unit === "euro per innb." ? " €" : ""));
   const unitTxt = (i) => (i.unit.startsWith("%") || i.unit === "PPS" ? i.unit : i.unit);
   const lastYear = (i, g = "NO") => { const ys = Object.keys(i.values[g] || {}); return ys.length ? ys[ys.length - 1] : null; };
   const valAt = (i, g, y) => i.values[g]?.[y] ?? null;
@@ -22,7 +42,7 @@
   (function readHash() { const h = new URLSearchParams(location.hash.slice(1)); if (IND[h.get("i")]) st.ind = h.get("i"); })();
   function score() {
     const el = document.getElementById("score");
-    el.innerHTML = GROUPS.map((g) => `<h3>${g}</h3>` + d.indicators.filter((i) => i.group === g).map((i) => {
+    el.innerHTML = GROUPS.map((g) => `<h3>${g}</h3>` + INDS.filter((i) => i.group === g).map((i) => {
       const y = lastYear(i);
       if (!y) return "";
       const pts = Object.keys(C).map((c) => ({ c, v: latestUpTo(i, c, y)?.v })).filter((p) => p.v != null);
@@ -55,7 +75,7 @@
     const rows = Object.keys(C).map((c) => ({ c, v: valAt(i, c, y) })).filter((r) => r.v != null).sort((a, b) => b.v - a.v);
     const eu = valAt(i, EU, y);
     document.getElementById("b-title").textContent = `${i.name}, ${y}`;
-    document.getElementById("b-sub").textContent = `${unitTxt(i)}. Norge er nr. ${rows.findIndex((r) => r.c === "NO") + 1 || "–"} av ${rows.length}.`;
+    document.getElementById("b-sub").textContent = `${unitTxt(i).replace(/\.$/, "")}. Norge er nr. ${rows.findIndex((r) => r.c === "NO") + 1 || "–"} av ${rows.length}.`;
     const rowH = 19, m = { t: 6, r: 56, b: 6, l: 92 };
     const w = Math.max(320, el.clientWidth || 600), h = m.t + m.b + rowH * rows.length;
     el.innerHTML = "";
@@ -162,7 +182,7 @@
   }
   document.getElementById("csv").onclick = () => {
     const out = [["Indikator", "Enhet", "Kilde", "Land", "År", "Verdi"]];
-    for (const i of d.indicators) for (const [g, s] of Object.entries(i.values)) for (const [y, v] of Object.entries(s)) out.push([i.name, i.unit, i.source, name(g), y, String(v).replace(".", ",")]);
+    for (const i of RAW) for (const [g, s] of Object.entries(i.values)) for (const [y, v] of Object.entries(s)) out.push([i.name, i.unit, i.source, name(g), y, String(v).replace(".", ",")]);
     S.downloadCsv("norge-i-europa.csv", out);
   };
 
@@ -226,6 +246,13 @@
     bars(i, st.yr); emap(i, st.yr); series(); table(i, st.yr);
     history.replaceState(null, "", "#i=" + st.ind);
   }
+  const modeSeg = document.getElementById("mode");
+  modeSeg.innerHTML = Object.entries(MODES).map(([k, l]) => `<button data-v="${k}" aria-pressed="${k === mode}">${l}</button>`).join("");
+  modeSeg.querySelectorAll("button").forEach((b) => (b.onclick = () => {
+    mode = b.dataset.v;
+    modeSeg.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    rebuild(); score(); renderSel(); scatter();
+  }));
   score(); renderSel(); scatter();
   let rt;
   window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { renderSel(); scatter(); }, 200); });
