@@ -31,6 +31,8 @@
     .strip .eu { position: absolute; top: 2px; width: 2px; height: 18px; margin-left: -1px; background: var(--text); opacity: .7; }
     .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
     .controls #ind { width: 300px; }
+    .page-head #mode button { font-size: 13px; }
+    @media (max-width: 720px) { #mode { flex-wrap: wrap; width: 100%; } #mode button { flex: 1 1 40%; white-space: normal; } }
     .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
     .kgrid > .card { margin-top: 0; }
     .emap svg { overflow: hidden; }
@@ -76,6 +78,10 @@
         <span class="eyebrow">Studie 12</span>
         <h1 class="display">Norge i Europa</h1>
         <p class="muted">Hvordan ligger Norge an sammenlignet med EU-landene, Sveits og Island – på skattenivå, offentlig pengebruk, inntekt, sparing, bolig, arbeid, sykefravær, trygd og innvandring?</p>
+      </div>
+      <div class="field">
+        <span class="label" id="mode-label">Skatt, utgifter og trygd målt som</span>
+        <div class="seg" role="group" aria-labelledby="mode-label" id="mode"></div>
       </div>
     </div>
 
@@ -125,8 +131,8 @@
     </section>
 
     <section class="story">
-      <div><h3>Prosent av BNP</h3><p>Mange mål er oppgitt i prosent av BNP. Norges BNP er høy på grunn av olje og gass, noe som får skattenivå og offentlige utgifter til å se lavere ut enn de ville gjort målt mot fastlandsøkonomien. Hver indikator har forklaring i profilen over.</p></div>
-      <div><h3>Kjøpekraft</h3><p>Inntekt og BNP er justert for prisnivå (PPS – kjøpekraftsenheter), slik at de kan sammenlignes mellom land med ulike priser.</p></div>
+      <div><h3>Andel av BNP eller per innbygger?</h3><p>Skatt, offentlige utgifter og trygd kan vises som andel av BNP eller per innbygger. Norges BNP er høy på grunn av olje og gass, så andelene ser lave ut – mens beløpene per innbygger er blant Europas høyeste. Per innbygger beregnes som andel av BNP × BNP per innbygger (Eurostat nama_10_pc). Luxembourg og Irland får høye tall per innbygger fordi BNP blåses opp av grensependlere og multinasjonale selskaper.</p></div>
+      <div><h3>Kjøpekraft</h3><p>«Kjøpekraftsjustert» (PPS) tar hensyn til at prisnivået er ulikt: en euro rekker lenger i Polen enn i Norge. Omregningen bruker Eurostats prisnivåindeks for BNP (prc_ppp_ind, EU = 100). Inntekt og BNP-indeksen er alltid kjøpekraftsjustert.</p></div>
       <div><h3>Kilder</h3><p>Eurostat (åpent API) og OECD (sykefravær og sparerate). Norges sparerate er fra SSB, tabell 12880, med samme definisjon. Landene som er med: EU-27, Norge, Island og Sveits. Kart: Eurostat GISCO.</p></div>
     </section>
   </main>
