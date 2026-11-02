@@ -27,7 +27,7 @@
 
   // ---------- Felles meny ----------
   const STUDIES = [
-    ["./", "Oversikt"], ["kart.html", "Skattekartet"], ["utgifter.html", "Skattepengene"], ["oljepenger.html", "Oljepengene"],
+    ["./", "Oversikt"], ["kart.html", "Skattekartet"], ["utgifter.html", "Skattepengene"], ["oljepenger.html", "Oljepengene"], ["europa.html", "Norge i Europa"],
     ["petroleum.html", "Petroleumsskatten"], ["formue.html", "Formuesskatten"], ["eiendomsskatt.html", "Eiendomsskatten"],
     ["profil.html", "Kommuneprofilen"], ["naering.html", "Næringslivet"], ["alder.html", "Aldersbølgen"],
     ["befolkning.html", "Befolkningen"], ["ulikhet.html", "Ulikhet"],

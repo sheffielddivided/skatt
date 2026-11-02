@@ -124,6 +124,15 @@
           <div class="meta"><span class="pill">SSB 14668</span><span class="pill">SSB 14722</span><span class="go">Følg pengene →</span></div>
         </div>
       </a>
+      <a class="card study" href="europa.html">
+        <div class="thumb" id="thumb-eu" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 12 · Internasjonalt</span>
+          <h3 class="display">Norge i Europa</h3>
+          <p>Skattenivå, offentlige utgifter, inntekt, sparing, boligeie, sysselsetting, sykefravær, trygd og innvandring – Norge sammenlignet med 29 europeiske land.</p>
+          <div class="meta"><span class="pill">Eurostat</span><span class="pill">OECD</span><span class="go">Sammenlign →</span></div>
+        </div>
+      </a>
       <a class="card study" href="petroleum.html">
         <div class="thumb" id="thumb-petro" aria-hidden="true"></div>
         <div class="body">
@@ -433,8 +442,26 @@
       });
       svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text("Inn i fondet (blått) og oljepengebruk (oransje)");
     }
-    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje();
-    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); });
+    const eu = await fetch("data/europa.json").then((r) => r.json());
+    function drawEu() {
+      const el = document.getElementById("thumb-eu");
+      el.innerHTML = "";
+      const w = 400, h = 230, keys = ["skatt", "syss", "syk", "eie", "gini", "inntekt"];
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("text").attr("x", 24).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text("Norge (oransje) blant europeiske land");
+      keys.forEach((k, j) => {
+        const ind = eu.indicators.find((i) => i.key === k);
+        const yrs = Object.keys(ind.values.NO || {}); const yr = yrs[yrs.length - 1];
+        const pts = Object.keys(eu.countries).map((c) => [c, ind.values[c]?.[yr]]).filter((p) => p[1] != null);
+        const x = d3.scaleLinear(d3.extent(pts, (p) => p[1]), [110, w - 24]);
+        const yy = 40 + j * 30;
+        svg.append("text").attr("x", 24).attr("y", yy + 4).attr("fill", "var(--text-2)").attr("font-size", 11).text(ind.name.length > 16 ? ind.name.slice(0, 15) + "…" : ind.name);
+        svg.append("line").attr("x1", 110).attr("x2", w - 24).attr("y1", yy).attr("y2", yy).attr("stroke", "var(--border)");
+        pts.sort((a, b) => (a[0] === "NO") - (b[0] === "NO")).forEach(([c, v]) => svg.append("circle").attr("cx", x(v)).attr("cy", yy).attr("r", c === "NO" ? 6 : 3.5).attr("fill", c === "NO" ? "var(--series-2)" : eu.nordic.includes(c) ? "var(--series-1)" : "var(--neutral-mark)"));
+      });
+    }
+    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); });
   })();
   </script>
 </body>
