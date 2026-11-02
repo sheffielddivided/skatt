@@ -13,6 +13,7 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `oljepenger.html` | **Oljepengene** – petroleumsinntekter inn, oljepengebruk ut, andel av fastlands-BNP og statens utgifter, fondets avkastning og statens finansformue | SSB 14668, 14722, 07511, 09189, 10486 |
 | `europa.html` | **Norge i Europa** – Norges profil på 22 indikatorer mot EU-landene, Sveits og Island: rangering, kart, tidsserier og sammenhenger | Eurostat, OECD, SSB 12880 |
 | `hverdag.html` | **Leger, lærere og våpen** – hverdagen i Europa: helsepersonell, skole og barnehage, biler og elbiler, trygghet, strømpris m.m. Samme motor som `europa.html` | Eurostat, Small Arms Survey |
+| `kommunehverdag.html` | **Leger, hytter og snøscootere** – leger, sykepleiere, barnehage, skole, biler, elbiler, traktorer, snøscootere, hytter, jegere, kirke, kino og lovbrudd per kommune. Samme motor som `profil.html` | SSB (KOSTRA m.fl.) |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
 | `eiendomsskatt.html` | **Eiendomsskatten** – inntekter fra bolig, fritid, kraft og næring siden 2007, ordninger, satser og enebolig-eksempel per kommune | SSB 14674, 14155 |
 | `naering.html` | **Næringslivet** – sysselsatte etter næring per kommune 2008–, spesialisering, pendling og sammenheng med skatt | SSB 13470 |
@@ -38,6 +39,7 @@ python3 scripts/build_naering.py     # sysselsatte etter næring
 python3 scripts/build_offentlig.py   # offentlige utgifter og oljepenger
 python3 scripts/build_europa.py      # Norge i Europa (Eurostat + OECD)
 python3 scripts/build_hverdag.py     # Leger, lærere og våpen (Eurostat + Small Arms Survey)
+python3 scripts/build_kommunehverdag.py  # Leger, hytter og snøscootere (SSB)
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.

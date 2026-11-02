@@ -42,6 +42,7 @@
       ["profil.html", "Kommuneprofilen", "Sammenhenger mellom 21 indikatorer"],
       ["naering.html", "Næringslivet", "Hva kommunene lever av"],
       ["ulikhet.html", "Inntektsulikhet", "Forskjeller og lavinntekt"],
+      ["kommunehverdag.html", "Leger, hytter og snøscootere", "Kommune-Norge i morsomme tall"],
     ] },
     { group: "Befolkning", items: [
       ["alder.html", "Aldersbølgen", "Befolkningspyramider 1986–i dag"],

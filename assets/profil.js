@@ -3,14 +3,14 @@
   const S = window.Skatt;
   const tip = S.tooltip();
   const [d, topo] = await Promise.all([
-    fetch("data/kommuneprofil.json").then((r) => r.json()),
+    fetch(document.body.dataset.src || "data/kommuneprofil.json").then((r) => r.json()),
     fetch("data/norge-2024.topo.json").then((r) => r.json()),
   ]);
   const K = d.kommuner;
   const IND = Object.fromEntries(d.indicators.map((i) => [i.key, i]));
   const ORDER = d.indicators.map((i) => i.key);
   const GROUPS = [...new Set(d.indicators.map((i) => i.group))];
-  const LOG = new Set(["pop", "formue"]);
+  const LOG = new Set(["pop", "formue", ...d.indicators.filter((i) => i.log).map((i) => i.key)]);
   const fylkeName = (f) => d.fylker[f] || f;
 
   // ---------------------------------------------------------------- format
@@ -18,15 +18,16 @@
     if (v == null || !isFinite(v)) return "–";
     const i = IND[key];
     if (i.unit === "kr") return short && v >= 10000 ? S.nf0.format(Math.round(v / 1000)) + "k" : S.kr(Math.round(v));
-    if (i.unit === "%") return S.pct(v, short ? 0 : 1, key === "vekst");
+    if (i.unit.startsWith("%")) return S.pct(v, short ? 0 : 1, key === "vekst");
     if (i.unit === "år") return S.nf1.format(v) + (short ? "" : " år");
     if (key === "fb") return S.nf1.format(v);
-    return short && v >= 10000 ? S.nf0.format(Math.round(v / 1000)) + "k" : S.int(v);
+    if (short && v >= 10000) return S.nf0.format(Math.round(v / 1000)) + "k";
+    return Math.abs(v) < 100 && Math.round(v) !== v ? S.nf1.format(v) : S.int(v);
   }
   const label = (key) => `${IND[key].name} (${IND[key].year})`;
 
   // ---------------------------------------------------------------- state
-  const st = { x: "hoyutd", y: "skatt", f: "", k: null, preset: "utd" };
+  const st = { x: d.defaults?.x || "hoyutd", y: d.defaults?.y || "skatt", f: "", k: null };
   (function readHash() {
     const h = new URLSearchParams(location.hash.slice(1));
     if (IND[h.get("x")]) st.x = h.get("x");
@@ -51,14 +52,14 @@
   fsel.onchange = () => { st.f = fsel.value; if (st.k && st.f && K[st.k].f !== st.f) st.k = null; render(); };
   document.getElementById("swap").onclick = () => { [st.x, st.y] = [st.y, st.x]; render(); };
 
-  const PRESETS = [
+  const PRESETS = (d.presets || [
     { id: "utd", label: "Utdanning og skatt", x: "hoyutd", y: "skatt" },
     { id: "eldre", label: "Eldre og skatt", x: "a67", y: "skatt" },
     { id: "ufore", label: "Utdanning og uføretrygd", x: "grunnskole", y: "ufore" },
     { id: "syss", label: "Sysselsetting og stønad", x: "syss", y: "stonad" },
     { id: "formue", label: "Inntekt og formuesskatt", x: "inntekt", y: "formue" },
     { id: "vekst", label: "Vekst og alder", x: "vekst", y: "med" },
-  ].filter((p) => IND[p.x] && IND[p.y]);
+  ]).filter((p) => IND[p.x] && IND[p.y]);
   const pre = document.getElementById("presets");
   pre.innerHTML += PRESETS.map((p) => `<button data-p="${p.id}">${p.label}</button>`).join("");
   pre.querySelectorAll("button").forEach((b) => (b.onclick = () => { const p = PRESETS.find((q) => q.id === b.dataset.p); st.x = p.x; st.y = p.y; render(); }));
@@ -125,9 +126,11 @@
     const x = mk(st.x, pad(d3.extent(pts, (p) => p.x), st.x), [m.l, w - m.r]);
     const y = mk(st.y, pad(d3.extent(pts, (p) => p.y), st.y), [h - m.b, m.t]);
     const tf = (v, key) => (LOG.has(key) ? Math.log10(v) : v);
-    svg.append("g").attr("class", "grid").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(6, LOG.has(st.y) ? "~s" : undefined).tickSize(-(w - m.l - m.r)).tickFormat(""));
-    svg.append("g").attr("class", "axis y").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(6).tickFormat((v) => fmt(st.y, v, true)).tickPadding(6));
-    const xt = LOG.has(st.x) ? x.ticks(6).filter((v, i, a) => a.length < 8 || [1, 2, 5].includes(+String(v)[0])) : x.ticks(6);
+    const logTicks = (sc) => { const t = sc.ticks().filter((v) => [1, 2, 5].includes(+String(v.toExponential())[0])); return t.length > 9 ? t.filter((v) => +String(v.toExponential())[0] === 1) : t; };
+    const yt = LOG.has(st.y) ? logTicks(y) : y.ticks(6);
+    svg.append("g").attr("class", "grid").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).tickValues(yt).tickSize(-(w - m.l - m.r)).tickFormat(""));
+    svg.append("g").attr("class", "axis y").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).tickValues(yt).tickFormat((v) => fmt(st.y, v, true)).tickPadding(6));
+    const xt = LOG.has(st.x) ? logTicks(x) : x.ticks(6);
     svg.append("g").attr("class", "axis x").attr("transform", `translate(0,${h - m.b})`).call(d3.axisBottom(x).tickValues(xt).tickFormat((v) => fmt(st.x, v, true)).tickSizeOuter(0));
     svg.append("text").attr("class", "axis-title").attr("x", w - m.r).attr("y", h - 8).attr("text-anchor", "end").text(label(st.x) + (LOG.has(st.x) ? " · log" : ""));
     svg.append("text").attr("class", "axis-title").attr("x", m.l).attr("y", m.t - 4).attr("dy", "-0.2em").text("");
@@ -208,7 +211,7 @@
         <button class="n">${S.escapeHtml(i.name)} <small>${i.year}</small></button>
         <span class="v">${fmt(i.key, v)}</span>
         <div class="strip"><div class="track"></div>
-          ${i.national != null ? `<div class="tick" style="left:${pos(i.national)}%" title="Landet: ${fmt(i.key, i.national)}"></div>` : ""}
+          ${i.national != null && pos(i.national) >= 0 && pos(i.national) <= 100 ? `<div class="tick" style="left:${pos(i.national)}%" title="Landet: ${fmt(i.key, i.national)}"></div>` : ""}
           ${v != null ? `<div class="dot" style="left:${pos(v)}%"></div>` : ""}
         </div>
         <span class="faint" style="font-size:11.5px;grid-column:1/-1;margin-top:-2px">${rank ? `Nr. ${rank} av ${all.length}` : "Ingen data"} · landet ${fmt(i.key, i.national)}</span>
@@ -245,7 +248,7 @@
       ...(st.x !== st.y ? [{ key: "y", label: S.escapeHtml(IND[st.y].name), fmt: (v) => fmt(st.y, v) }] : []),
     ], rows, { sortKey: "y", dir: -1, onRow: (id) => select(id, true) });
   }
-  document.getElementById("csv").onclick = () => S.downloadCsv("kommuneprofil.csv", [
+  document.getElementById("csv").onclick = () => S.downloadCsv((document.body.dataset.src || "data/kommuneprofil.json").split("/").pop().replace(".json", "") + ".csv", [
     ["Kommunenr", "Kommune", "Fylke", ...d.indicators.map((i) => `${i.name} (${i.year})`)],
     ...Object.entries(K).map(([id, k]) => [id, k.name, fylkeName(k.f), ...d.indicators.map((i) => (i.values[id] == null ? "" : String(i.values[id]).replace(".", ",")))]),
   ]);
