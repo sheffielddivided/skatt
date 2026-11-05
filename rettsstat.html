@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rettsstaten i verden · Felleskassen</title>
+  <meta name="description" content="Hvor sterk er rettsstaten i Norge sammenlignet med 142 andre land? Korrupsjon, maktbegrensning, åpenhet, rettigheter og rettspleie fra World Justice Project Rule of Law Index.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .controls #ind { width: 360px; }
+    .score { display: flex; flex-direction: column; gap: 2px; }
+    .srow { display: grid; grid-template-columns: 26px minmax(0, 300px) minmax(0, 1fr) 150px; gap: 0 14px; align-items: center; padding: 8px 6px; border-radius: 10px; cursor: pointer; border-bottom: 1px solid var(--border); }
+    .srow:hover { background: var(--surface-2); }
+    .srow.on { background: var(--accent-soft); }
+    .srow.sub { padding: 5px 6px 5px 46px; grid-template-columns: minmax(0, 280px) minmax(0, 1fr) 150px; border-bottom: 1px dashed var(--border); }
+    .srow.sub .n { font-size: 13px; color: var(--text-2); }
+    .srow .tg { border: 0; background: none; cursor: pointer; color: var(--text-3); width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; }
+    .srow .tg:hover { background: var(--surface-2); color: var(--text); }
+    .srow .tg svg { width: 14px; height: 14px; transition: transform .15s; }
+    .srow.open .tg svg { transform: rotate(90deg); }
+    .srow .n { font-size: 14px; color: var(--text); }
+    .srow.top .n { font-weight: 650; }
+    .srow .v { text-align: right; font-weight: 650; font-size: 14px; white-space: nowrap; }
+    .srow .v small { display: block; font-weight: 400; color: var(--text-3); font-size: 11.5px; }
+    .strip { position: relative; height: 22px; }
+    .strip .track { position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--surface-2); }
+    .strip .d { position: absolute; top: 8px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--neutral-mark); opacity: .6; }
+    .strip .d.nord { background: var(--series-1); opacity: 1; width: 8px; height: 8px; top: 7px; margin-left: -4px; }
+    .strip .d.no { width: 14px; height: 14px; top: 4px; margin-left: -7px; background: var(--series-2); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--series-2); opacity: 1; z-index: 2; }
+    .strip .md { position: absolute; top: 2px; width: 2px; height: 18px; margin-left: -1px; background: var(--text); opacity: .6; }
+    .subs[hidden] { display: none; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card { margin-top: 0; }
+    .wmap svg { overflow: hidden; }
+    .wmap path.c { stroke: var(--surface); stroke-width: .4; cursor: pointer; }
+    .wmap path.na { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.sel { fill: none; stroke: var(--text); stroke-width: 1.8; pointer-events: none; }
+    .wmap .lg text { fill: var(--text-2); font-size: 11.5px; }
+    .rank { max-height: 560px; overflow: auto; }
+    .rank .r { display: grid; grid-template-columns: 30px minmax(0, 1fr) 90px 46px; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .rank .r:hover { background: var(--surface-2); }
+    .rank .r.no { background: color-mix(in srgb, var(--series-2) 14%, transparent); font-weight: 650; }
+    .rank .r.pick { outline: 2px solid var(--text); }
+    .rank .r .i { color: var(--text-3); font-size: 11.5px; }
+    .rank .r .b { height: 8px; border-radius: 3px; background: var(--series-1); }
+    .rank .r.nord .b { background: var(--series-1); }
+    .rank .r:not(.nord) .b { background: var(--neutral-mark); }
+    .rank .r.no .b { background: var(--series-2); }
+    .rank .r .v { text-align: right; font-variant-numeric: tabular-nums; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+    .chip .sw { width: 10px; height: 10px; border-radius: 3px; }
+    .chip button { border: 0; background: none; cursor: pointer; color: var(--text-3); width: 20px; height: 20px; border-radius: 50%; }
+    .chip button:hover { background: var(--surface-2); color: var(--text); }
+    .dumb .lbl { fill: var(--text-2); font-size: 12.5px; }
+    .movers { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 1100px) { .kgrid, .movers { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .srow { grid-template-columns: 22px minmax(0, 1fr) 90px; } .srow .strip { grid-column: 2 / -1; grid-row: 2; } .srow .v { grid-column: 3; grid-row: 1; } .srow.sub { grid-template-columns: minmax(0, 1fr) 90px; padding-left: 12px; } .srow.sub .strip { grid-column: 1 / -1; grid-row: 2; } .srow.sub .v { grid-column: 2; grid-row: 1; } .controls .field, .controls #ind { width: 100%; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Felleskassen</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 15</span>
+        <h1 class="display">Rettsstaten i verden</h1>
+        <p class="muted">Holder makthaverne seg innenfor loven? Er det lite korrupsjon, åpen forvaltning, ytringsfrihet og rettferdige domstoler? World Justice Project måler rettsstaten i 143 land hvert år – her ser du hvordan Norge og resten av verden står seg.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Norges profil</h2><p>Poengsum fra 0 til 1 (1 er best). Hver prikk er et land: <span style="color:var(--series-2);font-weight:700">●</span> Norge, <span style="color:var(--series-1);font-weight:700">●</span> de andre nordiske landene, strek = median for alle land. Klikk på pilen for underfaktorer, eller på en rad for å utforske den.</p></div>
+      </div>
+      <div class="score" id="score"></div>
+    </section>
+
+    <h2 class="display section-title" id="sel-title"></h2>
+    <p class="section-lead" id="sel-desc"></p>
+    <section class="card panel">
+      <div class="controls">
+        <div class="field"><label for="ind">Mål</label><select id="ind" class="select"></select></div>
+        <div class="field"><label for="yr">Utgave</label><select id="yr" class="select"></select></div>
+        <div class="field"><label for="reg">Region</label><select id="reg" class="select"><option value="">Hele verden</option></select></div>
+      </div>
+    </section>
+    <section class="kgrid">
+      <div class="card panel"><div class="panel-head"><div><h2 id="m-title"></h2><p>Grå land er ikke med i indeksen. Klikk på et land for å legge det til i sammenligningen.</p></div></div><div class="chart wmap" id="map"></div></div>
+      <div class="card panel"><div class="panel-head"><div><h2 id="r-title"></h2><p id="r-sub"></p></div></div><div class="rank" id="rank"></div></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head"><div><h2 id="t-title"></h2><p>Velg opptil seks land. Klikk på et land i kartet eller listen for å legge det til.</p></div></div>
+      <div class="chips" id="chips"></div>
+      <div style="display:flex;gap:8px;margin:10px 0 6px"><input class="input" id="addc" type="search" list="clist" placeholder="Legg til land …" autocomplete="off" style="width:240px"><datalist id="clist"></datalist></div>
+      <div class="chart" id="ts"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head">
+          <div><h2>Norge mot et annet land</h2><p>De åtte faktorene i siste utgave.</p></div>
+          <div class="field"><label for="vs">Sammenlign med</label><select id="vs" class="select"></select></div>
+        </div>
+        <div class="legend" id="d-legend"></div>
+        <div class="chart dumb" id="dumb"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head">
+          <div><h2 id="mv-title"></h2><p id="mv-sub"></p></div>
+          <div class="field"><label for="from">Fra utgave</label><select id="from" class="select"></select></div>
+        </div>
+        <div class="movers"><div><h3 style="font-size:13px;color:var(--text-3);margin:0 0 6px">Størst fremgang</h3><div class="chart" id="up"></div></div><div><h3 style="font-size:13px;color:var(--text-3);margin:0 0 6px">Størst tilbakegang</h3><div class="chart" id="down"></div></div></div>
+      </section>
+    </div>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle land</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Hva måles?</h3><p>Indeksen består av åtte faktorer og 44 underfaktorer: begrensning av myndighetenes makt, fravær av korrupsjon, åpen forvaltning, grunnleggende rettigheter, orden og sikkerhet, håndheving av regelverk, sivil rettspleie og strafferettspleie. Alle poengsummer går fra 0 til 1.</p></div>
+      <div><h3>Hvordan?</h3><p>Tallene bygger på en befolkningsundersøkelse (omtrent 1 000 personer per land) og en ekspertundersøkelse blant jurister og fagfolk i hvert land. De måler hvordan rettsstaten oppleves i praksis, ikke hva som står i lovene. Antall land har økt fra 102 i 2015 til 143.</p></div>
+      <div><h3>Kilde</h3><p>World Justice Project, <a href="https://worldjusticeproject.org/rule-of-law-index/">WJP Rule of Law Index</a> 2015–2026. Norske oversettelser av faktornavnene er våre egne. Kart: Eurostat GISCO (Kosovo vises ikke i kartet, men er med i tallene).</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: World Justice Project Rule of Law Index® · Kart: © EuroGeographics (Eurostat GISCO)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/rettsstat.js"></script>
+</body>
+</html>
