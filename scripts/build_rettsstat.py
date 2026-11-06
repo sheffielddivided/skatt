@@ -62,7 +62,7 @@ def fetch(label):
     url = BASE.format(label)
     for k in range(3):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "felleskassen-visualisering/1.0"})
+            req = urllib.request.Request(url, headers={"User-Agent": "norge-asa-visualisering/1.0"})
             with urllib.request.urlopen(req, timeout=120) as r:
                 txt = r.read().decode("utf-8-sig")
                 # Ukjente år gir nettsidens HTML i stedet for 404
