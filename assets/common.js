@@ -1,4 +1,4 @@
-/* Felles hjelpefunksjoner for Felleskassen */
+/* Felles hjelpefunksjoner for Norge ASA */
 (function () {
   const root = document.documentElement;
 
@@ -26,7 +26,7 @@
   }
 
   // ---------- Felles meny ----------
-  const SITE = { name: "Felleskassen", tagline: "Skatt, velferd og samfunn i tall" };
+  const SITE = { name: "Norge ASA", tagline: "Skatt, velferd og samfunn i tall" };
   const MENU = [
     { group: "Skatt", items: [
       ["kart.html", "Skattekartet", "Skatteinngang i kommuner og fylker"],
