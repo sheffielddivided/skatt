@@ -1,4 +1,4 @@
-# Felleskassen – skatt, velferd og samfunn i tall
+# Norge ASA – skatt, velferd og samfunn i tall
 
 Interaktive visualiseringer av norsk skatt basert på åpne data fra Statistisk sentralbyrå (SSB).
 Statisk nettsted for GitHub Pages – ingen byggesteg.
