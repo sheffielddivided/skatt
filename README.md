@@ -15,6 +15,7 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `hverdag.html` | **Leger, lærere og våpen** – hverdagen i Europa: helsepersonell, skole og barnehage, biler og elbiler, trygghet, strømpris m.m. Samme motor som `europa.html` | Eurostat, Small Arms Survey |
 | `kommunehverdag.html` | **Leger, hytter og snøscootere** – leger, sykepleiere, barnehage, skole, biler, elbiler, traktorer, snøscootere, hytter, jegere, kirke, kino og lovbrudd per kommune. Samme motor som `profil.html` | SSB (KOSTRA m.fl.) |
 | `rettsstat.html` | **Rettsstaten i verden** – WJP Rule of Law Index for 143 land: samlet indeks, 8 faktorer og 44 underfaktorer, kart, rangering, utvikling og Norge mot andre land | World Justice Project |
+| `handel.html` | **Handelen med verden** – eksport og import av varer per land 1988–i dag, med og uten olje og gass, varegrupper per land, og hvem som er avhengig av hvem: Norge eller EU | SSB, Eurostat |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
 | `eiendomsskatt.html` | **Eiendomsskatten** – inntekter fra bolig, fritid, kraft og næring siden 2007, ordninger, satser og enebolig-eksempel per kommune | SSB 14674, 14155 |
 | `naering.html` | **Næringslivet** – sysselsatte etter næring per kommune 2008–, spesialisering, pendling og sammenheng med skatt | SSB 13470 |
@@ -42,6 +43,7 @@ python3 scripts/build_europa.py      # Norge i Europa (Eurostat + OECD)
 python3 scripts/build_hverdag.py     # Leger, lærere og våpen (Eurostat + Small Arms Survey)
 python3 scripts/build_kommunehverdag.py  # Leger, hytter og snøscootere (SSB)
 python3 scripts/build_rettsstat.py    # Rettsstaten i verden (World Justice Project)
+python3 scripts/build_handel.py       # Handelen med verden (SSB + Eurostat)
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.

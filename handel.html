@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Handelen med verden · Norge ASA</title>
+  <meta name="description" content="Hvor mye handler Norge med ulike land? Eksport og import av varer per land, med og uten olje og gass – og hvem som egentlig er avhengig av hvem, Norge eller EU.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card, .grid2 > .card { margin-top: 0; }
+    .wmap svg { overflow: hidden; }
+    .wmap path.c { stroke: var(--surface); stroke-width: .4; cursor: pointer; }
+    .wmap path.na { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.nor { fill: var(--series-2); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.sel { fill: none; stroke: var(--text); stroke-width: 1.8; pointer-events: none; }
+    .wmap .lg text { fill: var(--text-2); font-size: 11.5px; }
+    .rank { max-height: 600px; overflow: auto; }
+    .rank .r { display: grid; grid-template-columns: 26px minmax(0, 1fr) 110px 74px; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .rank .r:hover { background: var(--surface-2); }
+    .rank .r.on { background: var(--accent-soft); }
+    .rank .r.agg { font-weight: 650; }
+    .rank .r .i { color: var(--text-3); font-size: 11.5px; }
+    .rank .r .b { height: 8px; border-radius: 3px; background: var(--series-1); }
+    .rank .r .b.neg { background: var(--series-5); margin-left: auto; }
+    .rank .r .v { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rank .sep { border-top: 1px solid var(--border); margin: 6px 0; }
+    .dep { display: grid; grid-template-columns: 1fr; gap: 0; }
+    .dep .row { display: grid; grid-template-columns: minmax(0, 1fr) 210px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .dep .row:last-child { border-bottom: 0; }
+    .dep .hd { font-size: 13px; font-weight: 650; color: var(--text-2); padding-bottom: 6px; }
+    .dep .lab { text-align: center; font-size: 13.5px; color: var(--text); line-height: 1.35; }
+    .dep .lab small { display: block; color: var(--text-3); font-size: 11.5px; }
+    .dep .side { display: flex; flex-direction: column; gap: 4px; }
+    .dep .side.l { align-items: flex-end; }
+    .dep .bar { position: relative; height: 22px; width: 100%; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+    .dep .bar i { position: absolute; top: 0; bottom: 0; border-radius: 5px; }
+    .dep .side.l .bar i { right: 0; }
+    .dep .side.r .bar i { left: 0; }
+    .dep .bar i.a { background: var(--series-2); }
+    .dep .bar i.b { background: var(--series-1); }
+    .dep .bar i.lt { opacity: .5; }
+    .dep .bar.thin { height: 9px; }
+    .dep .num { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text-2); }
+    .dep .num b { color: var(--text); font-size: 15px; }
+    .callout { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; color: var(--text-2); max-width: 80ch; margin: 14px 0 0; }
+    .ckpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 12px 0 6px; }
+    .ckpis div { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
+    .ckpis .l { font-size: 12px; color: var(--text-3); }
+    .ckpis .v { font-size: 20px; font-weight: 650; }
+    .ckpis .s { font-size: 11.5px; color: var(--text-3); }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) {
+      .dep .row { grid-template-columns: 1fr 1fr; }
+      .dep .row .lab { grid-column: 1 / -1; grid-row: 1; }
+      .dep .row.head .gap { display: none; }
+      .ckpis { grid-template-columns: 1fr 1fr; }
+      .controls .field { width: 100%; }
+      .rank .r { grid-template-columns: 24px minmax(0, 1fr) 70px 70px; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 16</span>
+        <h1 class="display">Handelen med verden</h1>
+        <p class="muted">Hvem kjøper det Norge selger, og hvor kommer det vi kjøper fra? Olje og gass er over halvparten av vareeksporten, og det meste går til EU og Storbritannia. Derfor kan du se alle tallene både med og uten olje og gass.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="controls">
+        <div class="field">
+          <span class="label" id="og-label">Olje og gass</span>
+          <div class="seg" role="group" aria-labelledby="og-label" id="og">
+            <button data-v="med" aria-pressed="true">Med</button>
+            <button data-v="uten" aria-pressed="false">Uten</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="fl-label">Vis</span>
+          <div class="seg" role="group" aria-labelledby="fl-label" id="flow">
+            <button data-v="ex" aria-pressed="true">Eksport</button>
+            <button data-v="im" aria-pressed="false">Import</button>
+            <button data-v="bal" aria-pressed="false">Handelsbalanse</button>
+          </div>
+        </div>
+        <div class="field"><label for="yr">År</label><select id="yr" class="select"></select></div>
+      </div>
+    </section>
+
+    <section class="kgrid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div><h2 id="m-title"></h2><p id="m-sub"></p></div>
+          <div class="seg" role="group" aria-label="Kartutsnitt" id="zoom">
+            <button data-v="europa" aria-pressed="true">Europa</button>
+            <button data-v="verden" aria-pressed="false">Verden</button>
+          </div>
+        </div>
+        <div class="chart wmap" id="map"></div>
+      </div>
+      <div class="card panel"><div class="panel-head"><div><h2 id="r-title"></h2><p id="r-sub"></p></div></div><div class="rank" id="rank"></div></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="a-title"></h2><p id="a-sub"></p></div>
+        <div class="seg" role="group" aria-label="Enhet" id="aunit">
+          <button data-v="pct" aria-pressed="true">Andel</button>
+          <button data-v="kr" aria-pressed="false">Milliarder kr</button>
+        </div>
+      </div>
+      <div class="legend" id="a-legend"></div>
+      <div class="chart" id="area"></div>
+    </section>
+
+    <h2 class="display section-title">Hvem er avhengig av hvem?</h2>
+    <p class="section-lead">Det sies ofte at Norge er avhengig av EU. Det stemmer at det meste av handelen vår går til EU. Men EU er også avhengig av Norge, særlig av gassen. Her er de samme målene regnet fra begge sider.</p>
+    <section class="card panel">
+      <div class="panel-head"><div><h2 id="d-title">Norge og EU, sett fra begge sider</h2><p id="d-sub"></p></div></div>
+      <div class="dep" id="dep"></div>
+      <p class="callout" id="d-callout"></p>
+    </section>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Norges handel med EU over tid</h2><p>Andel av Norges vareeksport og -import som går til eller kommer fra EU-27 (dagens medlemsland i alle år).</p></div></div>
+        <div class="legend" id="n-legend"></div>
+        <div class="chart" id="nline"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>EUs avhengighet av Norge over tid</h2><p>Norges andel av EUs import fra land utenfor EU, og av EUs gassforbruk.</p></div></div>
+        <div class="legend" id="e-legend"></div>
+        <div class="chart" id="eline"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title" id="c-title"></h2>
+    <p class="section-lead">Velg et land i kartet, i listen eller her for å se hva vi selger dit og kjøper derfra.</p>
+    <section class="card panel">
+      <div class="controls"><div class="field"><label for="land">Land</label><select id="land" class="select" style="min-width:240px"></select></div></div>
+      <div class="ckpis" id="ckpis"></div>
+      <div class="legend" id="c-legend"></div>
+      <div class="chart" id="cline"></div>
+    </section>
+    <div class="grid2">
+      <section class="card panel"><div class="panel-head"><div><h2 id="ge-title"></h2><p id="ge-sub"></p></div></div><div class="chart" id="gex"></div></section>
+      <section class="card panel"><div class="panel-head"><div><h2 id="gi-title"></h2><p id="gi-sub"></p></div></div><div class="chart" id="gim"></div></section>
+    </div>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle land</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Med og uten olje og gass</h3><p>«Uten olje og gass» er SSBs <em>fastlandseksport</em>: all vareeksport utenom råolje, naturgass, kondensater, skip og oljeplattformer. Importen er da regnet uten skip og oljeplattformer. Raffinerte oljeprodukter som bensin og diesel er med i begge tallene.</p></div>
+      <div><h3>Hvor havner gassen?</h3><p>Gass i rør registreres på landet der røret kommer i land, som Tyskland, Storbritannia, Belgia og Frankrike. Mye av gassen sendes derfra videre til andre land. Tallene viser bare varer. Tjenester som skipsfart, turisme og konsulentarbeid er ikke med.</p></div>
+      <div><h3>Kilder</h3><p>SSB, tabell <a href="https://www.ssb.no/statbank/table/08804">08804</a> og <a href="https://www.ssb.no/statbank/table/08809">08809</a> (varehandel per land og SITC-varegruppe), samt BNP fra tabell 09189. EU-tallene er fra Eurostat (ext_st_eu27_2020sitc, nrg_ti_gas, nrg_cb_gas, nrg_ti_oil, nama_10_gdp). EU er dagens 27 medlemsland i alle år. Kart: Eurostat GISCO.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: SSB og Eurostat · Kart: © EuroGeographics (Eurostat GISCO)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/handel.js"></script>
+</body>
+</html>
