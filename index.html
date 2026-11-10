@@ -257,6 +257,15 @@
           <div class="meta"><span class="pill">IEA</span><span class="pill">Eurostat</span><span class="pill">SSB</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
+      <a class="card study" data-g="internasjonalt" href="bolig.html">
+        <div class="thumb" id="thumb-bo" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 18 · Internasjonalt</span>
+          <h3 class="display">Boligpriser i verden</h3>
+          <p>Har boligprisene steget mer i Norge enn i andre land? Sammenlign reelle boligpriser, husleie og pris mot inntekt i 50 land, og se prisene i norske regioner.</p>
+          <div class="meta"><span class="pill">OECD</span><span class="pill">SSB</span><span class="go">Utforsk →</span></div>
+        </div>
+      </a>
       <div class="card study soon">
         <div class="thumb" aria-hidden="true">
           <svg viewBox="0 0 200 120" style="width:120px;height:auto;color:var(--border-strong)"><g fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 5" stroke-linecap="round"><rect x="20" y="20" width="160" height="80" rx="12"/><path d="M100 45v30M85 60h30"/></g></svg>
@@ -597,8 +606,31 @@
         svg.append("text").attr("x", x(lp[0]) + 6).attr("y", y(lp[1]) + 4).attr("fill", "var(--text-2)").attr("font-size", 11.5).attr("font-weight", c === "NOR" ? 700 : 500).text(`${n} ${Math.round(lp[1])} %`);
       });
     }
-    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl();
-    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); });
+    const bo = await fetch("data/bolig.json").then((r) => r.json());
+    function drawBo() {
+      const el = document.getElementById("thumb-bo");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { l: 30, r: 82, t: 30, b: 20 };
+      const Q = bo.quarters, k0 = Q.findIndex((q) => q.startsWith("2000"));
+      const ser = [["ESP", "Spania", "var(--neutral-mark)"], ["SWE", "Sverige", "var(--series-1)"], ["DEU", "Tyskland", "var(--series-3)"], ["NOR", "Norge", "var(--series-2)"]].map(([c, n, col]) => {
+        const s = bo.oecd.real[c], b = s[k0];
+        return { c, n, col, pts: s.map((v, i) => [i, v == null || i < k0 ? null : (100 * v) / b]).filter((p) => p[1] != null) };
+      });
+      const x = d3.scaleLinear([k0, Q.length - 1], [m.l, w - m.r]), y = d3.scaleLinear([60, d3.max(ser.flatMap((s) => s.pts.map((p) => p[1])))], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("text").attr("x", 24).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text("Reelle boligpriser, 2000 = 100");
+      const labs = [];
+      ser.forEach((s) => {
+        svg.append("path").datum(s.pts).attr("fill", "none").attr("stroke", s.col).attr("stroke-width", s.c === "NOR" ? 3 : 2).attr("d", d3.line().x((p) => x(p[0])).y((p) => y(p[1])));
+        const lp = s.pts[s.pts.length - 1];
+        labs.push({ s, x: x(lp[0]) + 6, y: y(lp[1]) + 4 });
+      });
+      labs.sort((a, b) => a.y - b.y);
+      for (let k = 1; k < labs.length; k++) if (labs[k].y - labs[k - 1].y < 13) labs[k].y = labs[k - 1].y + 13;
+      labs.forEach((l) => svg.append("text").attr("x", l.x).attr("y", l.y).attr("fill", "var(--text-2)").attr("font-size", 11.5).attr("font-weight", l.s.c === "NOR" ? 700 : 500).text(l.s.n));
+    }
+    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); });
   })();
   </script>
 </body>

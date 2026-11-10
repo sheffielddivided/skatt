@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boligpriser i verden · Norge ASA</title>
+  <meta name="description" content="Hvor mye har boligprisene steget i Norge sammenlignet med andre land? Reelle og nominelle boligpriser, husleie, pris mot inntekt og pris mot husleie i 50 land fra 1970, og boligprisene i norske regioner.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .controls #ind { width: 380px; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card, .grid2 > .card { margin-top: 0; }
+    .wmap svg { overflow: hidden; }
+    .wmap path.c { stroke: var(--surface); stroke-width: .4; cursor: pointer; }
+    .wmap path.na { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.sel { fill: none; stroke: var(--text); stroke-width: 1.8; pointer-events: none; }
+    .wmap .lg text { fill: var(--text-2); font-size: 11.5px; }
+    .rank { max-height: 620px; overflow: auto; }
+    .rank .r { display: grid; grid-template-columns: 26px minmax(0, 1fr) 110px 64px; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .rank .r:hover { background: var(--surface-2); }
+    .rank .r.no { background: color-mix(in srgb, var(--series-2) 14%, transparent); font-weight: 650; }
+    .rank .r.agg { color: var(--text-2); font-style: italic; }
+    .rank .r.pick { background: var(--surface-2); font-weight: 600; }
+    .rank .r .i { color: var(--text-3); font-size: 11.5px; }
+    .rank .r .bw { position: relative; height: 8px; }
+    .rank .r .bw .z { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--border-strong); }
+    .rank .r .b { position: absolute; top: 0; height: 8px; border-radius: 3px; background: var(--neutral-mark); }
+    .rank .r.nord .b { background: var(--series-1); }
+    .rank .r.no .b { background: var(--series-2); }
+    .rank .r .v { text-align: right; font-variant-numeric: tabular-nums; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+    .chip .sw { width: 10px; height: 10px; border-radius: 3px; }
+    .chip button { border: 0; background: none; cursor: pointer; color: var(--text-3); width: 20px; height: 20px; border-radius: 50%; }
+    .chip button:hover { background: var(--surface-2); color: var(--text); }
+    .note { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .controls .field, .controls #ind { width: 100%; } .rank .r { grid-template-columns: 24px minmax(0, 1fr) 80px 58px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 18</span>
+        <h1 class="display">Boligpriser i verden</h1>
+        <p class="muted">Har boligprisene steget mer i Norge enn i andre land? Er boliger dyre målt mot inntekter og husleie? OECD samler boligprisindekser for rundt 50 land, mange helt tilbake til 1970. Her kan du sammenligne dem, se hvor langt prisene har falt fra toppen, og hvordan prisene har utviklet seg i norske regioner.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="controls">
+        <div class="field"><label for="ind">Mål</label><select id="ind" class="select"></select></div>
+        <div class="field" id="from-f"><label for="from">Endring fra</label><select id="from" class="select"></select></div>
+      </div>
+      <p class="note" id="ind-note"></p>
+    </section>
+    <section class="kgrid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div><h2 id="m-title"></h2><p id="m-sub"></p></div>
+          <div class="seg" role="group" aria-label="Kartutsnitt" id="zoom">
+            <button data-v="europa" aria-pressed="true">Europa</button>
+            <button data-v="verden" aria-pressed="false">Verden</button>
+          </div>
+        </div>
+        <div class="chart wmap" id="map"></div>
+      </div>
+      <div class="card panel"><div class="panel-head"><div><h2>Rangering</h2><p id="r-sub"></p></div></div><div class="rank" id="rank"></div></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head"><div><h2 id="t-title"></h2><p id="t-sub"></p></div></div>
+      <div class="chips" id="chips"></div>
+      <div style="display:flex;gap:8px;margin:10px 0 6px"><input class="input" id="addc" type="search" list="clist" placeholder="Legg til land …" autocomplete="off" style="width:240px"><datalist id="clist"></datalist></div>
+      <div class="chart" id="ts"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Dyre boliger?</h2><p id="sc-sub"></p></div></div>
+        <div class="chart" id="scatter"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Langt fra toppen?</h2><p id="pk-sub"></p></div></div>
+        <div class="chart" id="peak"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Boligprisene i Norge</h2>
+    <p class="section-lead">SSBs prisindeks for brukte boliger viser utviklingen i Oslo, de andre storbyene og resten av landet siden 1992. Tallene er nominelle, altså ikke justert for generell prisvekst.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="no-title"></h2><p id="no-sub"></p></div>
+        <div class="controls">
+          <div class="field"><span class="label" id="bt-label">Boligtype</span>
+            <div class="seg" role="group" aria-labelledby="bt-label" id="btype">
+              <button data-v="00" aria-pressed="true">Alle</button>
+              <button data-v="01" aria-pressed="false">Eneboliger</button>
+              <button data-v="02" aria-pressed="false">Småhus</button>
+              <button data-v="03" aria-pressed="false">Blokk</button>
+            </div>
+          </div>
+          <div class="field"><label for="nofrom">Fra</label><select id="nofrom" class="select"></select></div>
+        </div>
+      </div>
+      <div class="legend" id="no-legend"></div>
+      <div class="chart" id="nots"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle land</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Indekser, ikke kroner</h3><p>Det finnes ingen god, åpen kilde som sammenligner boligpriser i kroner per kvadratmeter mellom land. OECD bruker derfor indekser som viser hvor mye prisene har endret seg i hvert land. Reelle priser er justert for generell prisvekst (KPI), så de viser om boliger har blitt dyrere enn andre varer og tjenester.</p></div>
+      <div><h3>Pris mot inntekt og husleie</h3><p>Pris mot inntekt er boligprisene delt på disponibel inntekt per innbygger. Pris mot husleie er boligprisene delt på leieprisene. Når OECD sammenligner med langtidssnittet, betyr 100 at forholdet er som snittet i landet over tid. Over 100 betyr at boliger er dyre sammenlignet med før, men ikke nødvendigvis at det er en boble. Lave renter kan for eksempel forklare høye priser.</p></div>
+      <div><h3>Kilder</h3><p>OECD, <a href="https://data-explorer.oecd.org/">Analytical house price indicators</a> (kvartalstall, sesongjusterte). SSB, tabell <a href="https://www.ssb.no/statbank/table/07221">07221</a> (prisindeks for brukte boliger, 2015 = 100). OECD-tallene for Norge bygger også på SSB. Kart: Eurostat GISCO.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: OECD og SSB · Kart: © EuroGeographics (Eurostat GISCO)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/bolig.js"></script>
+</body>
+</html>
