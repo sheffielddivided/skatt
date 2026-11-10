@@ -13,12 +13,54 @@
     const mx = d3.mean(x), my = d3.mean(y);
     return d3.sum(x, (p, i) => (p - mx) * (y[i] - my)) / Math.sqrt(d3.sum(x, (p) => (p - mx) ** 2) * d3.sum(y, (q) => (q - my) ** 2));
   }
+  // Spearman: Pearson-korrelasjon på rangene (snittrang ved like verdier)
   function spearman(a, b) {
-    const ks = pairs(a, b);
-    const rank = (key) => { const s = ks.slice().sort((p, q) => v(key, p) - v(key, q)); const r = {}; s.forEach((k, i) => (r[k] = i)); return r; };
-    const ra = rank(a), rb = rank(b), n = ks.length;
-    return { r: 1 - (6 * d3.sum(ks, (k) => (ra[k] - rb[k]) ** 2)) / (n * (n * n - 1)), n };
+    const ks = pairs(a, b), n = ks.length;
+    const rank = (key) => {
+      const s = ks.slice().sort((p, q) => v(key, p) - v(key, q)), r = {};
+      for (let i = 0; i < n;) { let j = i; while (j + 1 < n && v(key, s[j + 1]) === v(key, s[i])) j++; for (let t = i; t <= j; t++) r[s[t]] = (i + j) / 2; i = j + 1; }
+      return r;
+    };
+    const ra = rank(a), rb = rank(b), m = (n - 1) / 2;
+    const r = d3.sum(ks, (k) => (ra[k] - m) * (rb[k] - m)) / Math.sqrt(d3.sum(ks, (k) => (ra[k] - m) ** 2) * d3.sum(ks, (k) => (rb[k] - m) ** 2));
+    return { r, n, ...signif(r, n, 1.06) };
   }
+
+  // ---------------------------------------------------------------- signifikanstest
+  // Tosidig t-test av H0: ingen sammenheng (t = r·√((n−2)/(1−r²)), n−2 frihetsgrader),
+  // og 95 % konfidensintervall via Fishers z (for Spearman med variansfaktor 1,06, Fieller m.fl.).
+  function lgamma(x) {
+    const c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+    let y = x, t = x + 5.5; t -= (x + 0.5) * Math.log(t);
+    let ser = 1.000000000190015; for (const ci of c) ser += ci / ++y;
+    return -t + Math.log((2.5066282746310005 * ser) / x);
+  }
+  function betacf(a, b, x) {
+    let qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - (qab * x) / qap;
+    d = 1 / (Math.abs(d) < 1e-300 ? 1e-300 : d); let h = d;
+    for (let m = 1; m <= 300; m++) {
+      const m2 = 2 * m;
+      let aa = (m * (b - m) * x) / ((qam + m2) * (a + m2));
+      d = 1 + aa * d; d = 1 / (Math.abs(d) < 1e-300 ? 1e-300 : d); c = 1 + aa / c; c = Math.abs(c) < 1e-300 ? 1e-300 : c; h *= d * c;
+      aa = (-(a + m) * (qab + m) * x) / ((a + m2) * (qap + m2));
+      d = 1 + aa * d; d = 1 / (Math.abs(d) < 1e-300 ? 1e-300 : d); c = 1 + aa / c; c = Math.abs(c) < 1e-300 ? 1e-300 : c;
+      const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-12) break;
+    }
+    return h;
+  }
+  function ibeta(a, b, x) {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    const bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x));
+    return x < (a + 1) / (a + b + 2) ? (bt * betacf(a, b, x)) / a : 1 - (bt * betacf(b, a, 1 - x)) / b;
+  }
+  function signif(r, n, vf = 1) {
+    const df = n - 2, t = r * Math.sqrt(df / Math.max(1e-12, 1 - r * r));
+    const p = ibeta(df / 2, 0.5, df / (df + t * t));
+    const z = Math.atanh(r), se = Math.sqrt(vf / (n - 3));
+    return { t, df, p, lo: Math.tanh(z - 1.96 * se), hi: Math.tanh(z + 1.96 * se) };
+  }
+  const fp = (p) => (p < 0.001 ? "p < 0,001" : `p = ${p < 0.01 ? p.toFixed(3) : p.toFixed(2)}`.replace(".", ","));
+  const fr = (x) => f2(x).replace("-", "−");
   // vektet snitt: branner per 1 000 innbyggere for en gruppe kommuner
   const groupRate = (ks) => d3.sum(ks, (k) => v("brann", k) * v("pop", k)) / d3.sum(ks, (k) => v("pop", k));
   const nat = I.brann.national;
@@ -34,7 +76,7 @@
       { l: `Boligbranner ${I.brann.year}`, v: S.int(d.branner_totalt), s: `Ca. ${S.int(d.branner_totalt / n)} per år · ${f2(nat)} per 1 000 innbyggere` },
       { l: "Flest per innbygger", v: S.escapeHtml(K[top[0]].name), s: `${f2(v("brann", top[0]))} per 1 000 · så ${top.slice(1, 3).map((k) => K[k].name).join(" og ")}` },
       { l: "Blant de største kommunene", v: S.escapeHtml(K[big[0]].name), s: `${f2(v("brann", big[0]))} per 1 000 · lavest: ${K[big[big.length - 1]].name} (${f2(v("brann", big[big.length - 1]))})` },
-      { l: "Boligpris og branner", v: `r = ${sp.r.toFixed(2).replace(".", ",").replace("-", "−")}`, s: "Rangkorrelasjon: Der boligene er billige, brenner det oftere" },
+      { l: "Boligpris og branner", v: `r = ${sp.r.toFixed(2).replace(".", ",").replace("-", "−")}`, s: `Rangkorrelasjon, ${fp(sp.p)}: Der boligene er billige, brenner det oftere` },
     ];
     document.getElementById("kpis").innerHTML = cards.map((c) => `<div class="card kpi"><div class="l">${c.l}</div><div class="v">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
   })();
@@ -44,8 +86,10 @@
   function corrbars() {
     const el = document.getElementById("corrbars");
     const rows = CORR.map(([key, preset]) => ({ key, preset, s: spearman(key, "brann"), p: pearson(key, "brann") })).sort((a, b) => b.s.r - a.s.r);
-    document.getElementById("c-sub").textContent = "Rangkorrelasjon mellom boligbranner per innbygger og fem kjennetegn ved kommunen. Positiv: mer av dette, flere branner. Negativ: mer av dette, færre branner. Klikk på en rad for å se den i diagrammet under.";
-    const w = Math.max(300, el.clientWidth || 800), narrow = w < 560, rowH = narrow ? 44 : 34, m = { t: 6, r: 50, b: 26, l: narrow ? 10 : 260 };
+    const nTest = rows.length, alpha = 0.05, bonf = alpha / nTest;
+    rows.forEach((r) => { r.pp = signif(r.p, r.s.n); r.sig = r.s.p < bonf ? 2 : r.s.p < alpha ? 1 : 0; });
+    document.getElementById("c-sub").textContent = "Rangkorrelasjon (Spearman) mellom boligbranner per innbygger og fem kjennetegn ved kommunen, med 95 % konfidensintervall (strek) og signifikanstest. Positiv: mer av dette, flere branner. Negativ: mer av dette, færre branner. Klikk på en rad for å se den i diagrammet under.";
+    const w = Math.max(300, el.clientWidth || 800), narrow = w < 560, rowH = narrow ? 64 : 36, m = { t: 6, r: narrow ? 10 : 170, b: 26, l: narrow ? 10 : 260 };
     const h = m.t + m.b + rowH * rows.length;
     el.innerHTML = "";
     const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
@@ -54,16 +98,35 @@
     svg.append("g").attr("class", "axis x").attr("transform", `translate(0,${h - m.b})`).call(d3.axisBottom(x).ticks(7).tickFormat((t) => t.toFixed(1).replace(".", ",").replace("-", "−")).tickSizeOuter(0));
     svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.t).attr("y2", h - m.b).attr("stroke", "var(--text-3)");
     rows.forEach((r, i) => {
-      const yy = m.t + i * rowH, by = narrow ? yy + 20 : yy + 8, bh = narrow ? 16 : rowH - 16;
+      const yy = m.t + i * rowH, by = narrow ? yy + 20 : yy + 9, bh = narrow ? 14 : rowH - 18;
+      const sigTxt = r.sig === 2 ? "signifikant" : r.sig === 1 ? "svakt signifikant" : "ikke signifikant";
       const g = svg.append("g").style("cursor", "pointer")
         .on("click", () => { const b = document.querySelector(`#presets button[data-p="${r.preset}"]`); if (b) { b.click(); document.getElementById("presets").scrollIntoView({ behavior: "smooth", block: "start" }); } })
-        .on("mousemove", (e) => tip.show(`<div class="tt-title">${S.escapeHtml(I[r.key].name)}</div><div class="tt-row"><span>Rangkorrelasjon</span><b>${f2(r.s.r).replace("-", "−")}</b></div><div class="tt-row"><span>Vanlig korrelasjon (r)</span><b>${f2(r.p).replace("-", "−")}</b></div><div class="tt-row"><span>Kommuner</span><b>${r.s.n}</b></div><div style="max-width:260px;margin-top:4px">${S.escapeHtml(I[r.key].desc)}</div>`, e.clientX, e.clientY))
+        .on("mousemove", (e) => tip.show(`<div class="tt-title">${S.escapeHtml(I[r.key].name)}</div>
+          <div class="tt-row"><span>Rangkorrelasjon (Spearman)</span><b>${fr(r.s.r)}</b></div>
+          <div class="tt-row"><span>95 % konfidensintervall</span><b>${fr(r.s.lo)} til ${fr(r.s.hi)}</b></div>
+          <div class="tt-row"><span>t (${r.s.df} frihetsgrader)</span><b>${S.nf1.format(r.s.t).replace("-", "−")}</b></div>
+          <div class="tt-row"><span>p-verdi</span><b>${fp(r.s.p)}</b></div>
+          <div class="tt-row"><span>Vanlig korrelasjon (Pearson)</span><b>${fr(r.p)} · ${fp(r.pp.p)}</b></div>
+          <div class="tt-row"><span>Kommuner</span><b>${r.s.n}</b></div>
+          <div style="max-width:280px;margin-top:4px">${r.sig === 2 ? `Signifikant også etter Bonferroni-korreksjon for ${nTest} tester (p < ${String(bonf).replace(".", ",")}).` : r.sig === 1 ? `Signifikant på 5 %-nivå, men ikke etter korreksjon for ${nTest} tester.` : "Kan godt skyldes tilfeldigheter."}</div>`, e.clientX, e.clientY))
         .on("mouseleave", () => tip.hide());
       g.append("rect").attr("x", 0).attr("y", yy).attr("width", w).attr("height", rowH).attr("fill", "transparent");
       g.append("text").attr("x", narrow ? m.l : m.l - 12).attr("y", narrow ? yy + 14 : yy + rowH / 2 + 4).attr("text-anchor", narrow ? "start" : "end").attr("fill", "var(--text)").attr("font-size", 13).text(`${I[r.key].name} (${I[r.key].year})`);
-      g.append("rect").attr("x", Math.min(x(0), x(r.s.r))).attr("y", by).attr("height", bh).attr("rx", 3).attr("width", Math.abs(x(r.s.r) - x(0))).attr("fill", r.s.r > 0 ? "var(--series-5)" : "var(--series-1)");
-      g.append("text").attr("x", r.s.r > 0 ? x(r.s.r) + 6 : x(r.s.r) - 6).attr("y", by + bh / 2 + 4).attr("text-anchor", r.s.r > 0 ? "start" : "end").attr("fill", "var(--text)").attr("font-size", 12).attr("font-weight", 600).text(f2(r.s.r).replace("-", "−"));
+      g.append("rect").attr("x", Math.min(x(0), x(r.s.r))).attr("y", by).attr("height", bh).attr("rx", 3).attr("width", Math.abs(x(r.s.r) - x(0)))
+        .attr("fill", r.s.r > 0 ? "var(--series-5)" : "var(--series-1)").attr("opacity", r.sig ? 1 : 0.35);
+      // konfidensintervall
+      const cy = by + bh / 2;
+      g.append("line").attr("x1", x(r.s.lo)).attr("x2", x(r.s.hi)).attr("y1", cy).attr("y2", cy).attr("stroke", "var(--text)").attr("stroke-width", 1.5);
+      [r.s.lo, r.s.hi].forEach((xv) => g.append("line").attr("x1", x(xv)).attr("x2", x(xv)).attr("y1", cy - 5).attr("y2", cy + 5).attr("stroke", "var(--text)").attr("stroke-width", 1.5));
+      const lab = `${fr(r.s.r)} · ${fp(r.s.p)}${r.sig === 2 ? " ✓" : r.sig === 1 ? " (✓)" : ""}`;
+      if (narrow) g.append("text").attr("x", m.l).attr("y", by + bh + 15).attr("fill", "var(--text-2)").attr("font-size", 11.5).attr("font-weight", 600).text(lab);
+      else g.append("text").attr("x", w - m.r + 14).attr("y", cy + 4).attr("fill", "var(--text)").attr("font-size", 12).attr("font-weight", 600).text(lab);
     });
+    const sig = rows.filter((r) => r.sig === 2), weak = rows.filter((r) => r.sig === 1), non = rows.filter((r) => r.sig === 0);
+    const nm = (rs) => rs.map((r) => I[r.key].name.toLowerCase()).join(", ").replace(/, ([^,]*)$/, " og $1");
+    document.getElementById("c-note").innerHTML = `<b>Signifikanstest:</b> ${sig.length ? `Sammenhengen med ${nm(sig)} er statistisk signifikant, også etter Bonferroni-korreksjon for at vi tester ${nTest} sammenhenger samtidig (p < ${String(bonf).replace(".", ",")}).` : ""}${weak.length ? ` Sammenhengen med ${nm(weak)} er signifikant på 5 %-nivå, men ikke etter korreksjonen.` : ""}${non.length ? ` Sammenhengen med ${nm(non)} er ikke signifikant og kan godt skyldes tilfeldigheter.` : ""}
+      Testen sier bare at sammenhengen neppe skyldes tilfeldigheter. Den sier ikke hvor sterk den er eller hva som er årsaken. Nabokommuner ligner ofte på hverandre, så kommunene er ikke helt uavhengige observasjoner. Det gjør p-verdiene noe for optimistiske.`;
   }
 
   // ---------------------------------------------------------------- grupper (femtedeler)
