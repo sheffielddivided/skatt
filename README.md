@@ -19,6 +19,7 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `elbil.html` | **Elbiler i verden** – elbilenes andel av nybilsalg og bilpark i over 60 land 2010–i dag, elbil mot ladbar hybrid i Europa, Norge måned for måned og incentiver | IEA (via Our World in Data), Eurostat, SSB |
 | `bolig.html` | **Boligpriser i verden** – reelle og nominelle boligpriser, husleie, pris mot inntekt og pris mot husleie i ca. 50 land fra 1970, avstand fra toppen, og boligpriser i norske regioner | OECD, SSB |
 | `brann.html` | **Boligbranner i kommunene** – boligbranner per innbygger 2015–i dag sammenholdt med boligpris, flytting, befolkningsendring, alder og piper. Samme motor som `profil.html` | SSB (KOSTRA, 06035, 06913) |
+| `sykefravaer.html` | **Sykefraværet i kommunene** – legemeldt sykefravær 2015–i dag per kommune, etter kjønn og alder, justert for alder og kjønn, og sammenheng med uføretrygd, utdanning og inntekt | FHI (grunnlag fra SSB) |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
 | `eiendomsskatt.html` | **Eiendomsskatten** – inntekter fra bolig, fritid, kraft og næring siden 2007, ordninger, satser og enebolig-eksempel per kommune | SSB 14674, 14155 |
 | `naering.html` | **Næringslivet** – sysselsatte etter næring per kommune 2008–, spesialisering, pendling og sammenheng med skatt | SSB 13470 |
@@ -46,6 +47,7 @@ python3 scripts/build_europa.py      # Norge i Europa (Eurostat + OECD)
 python3 scripts/build_hverdag.py     # Leger, lærere og våpen (Eurostat + Small Arms Survey)
 python3 scripts/build_kommunehverdag.py  # Leger, hytter og snøscootere (SSB)
 python3 scripts/build_brann.py        # Boligbranner i kommunene (SSB/KOSTRA)
+python3 scripts/build_sykefravaer.py  # Sykefraværet i kommunene (FHI)
 python3 scripts/build_rettsstat.py    # Rettsstaten i verden (World Justice Project)
 python3 scripts/build_handel.py       # Handelen med verden (SSB + Eurostat)
 python3 scripts/build_elbil.py        # Elbiler i verden (IEA via OWID, Eurostat, SSB)
