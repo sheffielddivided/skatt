@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sykefraværet i kommunene · Norge ASA</title>
+  <meta name="description" content="Legemeldt sykefravær i alle norske kommuner 2015–2024: kart, utvikling, kjønn og alder, justert for alders- og kjønnssammensetning, og sammenhengen med uføretrygd, utdanning og inntekt.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <link rel="stylesheet" href="assets/choro.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; padding: 16px 18px; margin-top: 16px; }
+    .controls #ind { width: 280px; }
+    .side .bars text { font-size: 11.5px; }
+    .seg button:disabled { opacity: .4; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card { margin-top: 0; }
+    .map-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .map-card .panel-head { padding: 18px 20px 6px; margin: 0; }
+    .map-card .choro { flex: 1; min-height: 640px; }
+    .side h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin: 22px 0 8px; }
+    .side h2.big { font-size: 28px; }
+    .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 14px; }
+    .kv > div { background: var(--surface); padding: 10px 12px; }
+    .kv .k { font-size: 12px; color: var(--text-3); }
+    .kv .v { font-size: 17px; font-weight: 600; margin-top: 2px; }
+    .kv .n { font-size: 11.5px; color: var(--text-3); }
+    .rank-list { list-style: none; margin: 0; padding: 0; }
+    .rank-list li button { width: 100%; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .rank-list li button:hover { background: var(--surface-2); }
+    .rank-list .r { color: var(--text-3); font-size: 12px; }
+    .rank-list .v { font-weight: 600; }
+    .scatter .dot { stroke: var(--surface); stroke-width: 1; cursor: pointer; }
+    .scatter .dot.dim { opacity: .15; pointer-events: none; }
+    .scatter .q { fill: var(--text-3); font-size: 12px; font-weight: 600; letter-spacing: .02em; }
+    .scatter .lbl { font-size: 12px; font-weight: 600; fill: var(--text); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; pointer-events: none; }
+    /* Legenden nederst til høyre, der Norgeskartet har mest ledig plass */
+    .choro-legend { left: auto; right: 12px; }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } .map-card .choro { min-height: 70vh; } }
+    @media (max-width: 720px) { .controls .field, .controls #ind { width: 100%; } .panel-head .field, #scx { width: 100%; max-width: 100%; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+  <script src="assets/choro.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 20</span>
+        <h1 class="display">Sykefraværet i kommunene</h1>
+        <p class="muted">Hvor er sykefraværet høyest, og hvorfor? Her ser du legemeldt sykefravær for lønnstakere i alle kommuner fra 2015. Du kan se tallene for kvinner og menn og for ulike aldersgrupper, og justert slik at kommuner med mange eldre eller mange kvinner kan sammenlignes rettferdig med andre.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <h2 class="display section-title">Sykefraværet i Norge</h2>
+    <p class="section-lead">Sykefraværsdagsverk i prosent av avtalte dagsverk for lønnstakere 20–66 år. Fraværet gikk ned etter koronaårene, men har økt hvert år siden 2021.</p>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Kvinner og menn</h2><p>Kvinner har nesten dobbelt så høyt legemeldt sykefravær som menn.</p></div></div>
+        <div class="legend" id="n1-legend"></div>
+        <div class="chart" id="n1"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Etter alder</h2><p>Sykefraværet øker med alderen, men økningen de siste årene har vært størst blant de yngste.</p></div></div>
+        <div class="legend" id="n2-legend"></div>
+        <div class="chart" id="n2"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Kommunene</h2>
+    <p class="section-lead">Velg et mål og klikk på en kommune for å se detaljer. Tallene gjelder der lønnstakerne bor, ikke der de jobber.</p>
+    <section class="card controls" aria-label="Valg">
+      <div class="field"><label for="ind">Mål</label><select id="ind" class="select">
+        <option value="rate">Sykefravær</option>
+        <option value="std">Sykefravær justert for alder og kjønn</option>
+        <option value="chg">Endring siden 2019 (prosentpoeng)</option>
+      </select></div>
+      <div class="field"><span class="label" id="kj-label">Kjønn</span>
+        <div class="seg" role="group" aria-labelledby="kj-label" id="kj">
+          <button data-v="0" aria-pressed="true">Alle</button><button data-v="2" aria-pressed="false">Kvinner</button><button data-v="1" aria-pressed="false">Menn</button>
+        </div></div>
+      <div class="field"><label for="age">Alder</label><select id="age" class="select">
+        <option value="20_66">20–66 år</option><option value="20_29">20–29 år</option><option value="30_44">30–44 år</option><option value="45_54">45–54 år</option><option value="55_66">55–66 år</option>
+      </select></div>
+      <div class="field"><label for="yr">År</label><select id="yr" class="select"></select></div>
+      <div class="field"><label for="fy">Fylke</label><select id="fy" class="select"><option value="">Hele landet</option></select></div>
+      <div class="field"><label for="search">Finn kommune</label><input id="search" class="input" type="search" placeholder="F.eks. Bodø" list="klist" autocomplete="off"><datalist id="klist"></datalist></div>
+    </section>
+    <p class="note faint" id="ind-note" style="font-size:12.5px;margin:8px 2px 0"></p>
+
+    <section class="kgrid">
+      <div class="card map-card">
+        <div class="panel-head"><div><h2 id="map-title"></h2><p id="map-sub"></p></div></div>
+        <div id="map"></div>
+      </div>
+      <div class="card panel side" id="side" aria-live="polite"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="sc-title">Hva henger sammen med sykefraværet?</h2><p id="sc-sub"></p></div>
+        <div class="field"><label for="scx">Sammenlign med</label><select id="scx" class="select"></select></div>
+      </div>
+      <div class="corr" id="sc-corr" style="font-size:13px;color:var(--text-2);margin:0 0 6px"></div>
+      <div class="chart scatter" id="sc"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle kommuner</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Hva måles?</h3><p>Legemeldt sykefravær er sykefraværsdagsverk i prosent av avtalte dagsverk for lønnstakere 20–66 år, justert for stillingsprosent og sykmeldingsgrad. Egenmeldt fravær er ikke med. Tallene gjelder der lønnstakerne bor.</p></div>
+      <div><h3>Justert for alder og kjønn</h3><p>Kvinner og eldre har høyere sykefravær enn andre. En kommune med mange eldre kvinner vil derfor ha høyt fravær selv om hver aldersgruppe er like frisk som ellers i landet. Det justerte målet viser hva fraværet ville vært med samme alders- og kjønnssammensetning som landet. Forholdstallet viser det samme, med landet satt til 100.</p></div>
+      <div><h3>Kilder</h3><p>FHI, <a href="https://statistikk.fhi.no/">folkehelsestatistikk</a> (Sykefravær), med grunnlagstall fra SSB. Kommuneinndeling per 1.1.2025. Uføretrygd, sosialhjelp, utdanning og inntekt er hentet fra <a href="profil.html">Kommuneprofilen</a>. Små kommuner kan mangle tall for enkelte kjønn og aldersgrupper av personvernhensyn.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilder: Statistisk sentralbyrå og Folkehelseinstituttet (CC BY 4.0) · Kart: Kartverket</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/sykefravaer.js"></script>
+</body>
+</html>
