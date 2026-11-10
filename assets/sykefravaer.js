@@ -189,7 +189,8 @@
     const r = d3.sum(pts, (p) => (p.x - mx) * (p.y - my)) / Math.sqrt(d3.sum(pts, (p) => (p.x - mx) ** 2) * d3.sum(pts, (p) => (p.y - my) ** 2));
     const word = Math.abs(r) < 0.1 ? "ingen tydelig" : Math.abs(r) < 0.3 ? "svak" : Math.abs(r) < 0.5 ? "moderat" : "sterk";
     document.getElementById("sc-sub").textContent = `Sykefravær justert for alder og kjønn (${Y[L]}) mot et annet kjennetegn ved kommunen. Hver prikk er en kommune, størrelsen viser folketallet.`;
-    document.getElementById("sc-corr").innerHTML = `<span class="pill accent">r = ${r.toFixed(2).replace(".", ",").replace("-", "−")}</span> ${word} ${r > 0 ? "positiv" : "negativ"} sammenheng blant ${pts.length} kommuner${st.f ? ` i ${S.escapeHtml(fylkeName(st.f))}` : ""}`;
+    const tst = S.stats.signif(r, pts.length), rt = (v) => v.toFixed(2).replace(".", ",").replace("-", "−");
+    document.getElementById("sc-corr").innerHTML = `<span class="pill accent">r = ${rt(r)}</span> ${word} ${r > 0 ? "positiv" : "negativ"} sammenheng blant ${pts.length} kommuner${st.f ? ` i ${S.escapeHtml(fylkeName(st.f))}` : ""} · 95 % KI ${rt(tst.lo)} til ${rt(tst.hi)} · <span title="Tosidig t-test: t = ${S.nf1.format(tst.t).replace("-", "−")}, ${tst.df} frihetsgrader. Nabokommuner ligner ofte på hverandre, så p-verdien er noe for optimistisk.">${S.stats.fmtP(tst.p)}, ${tst.p < 0.05 ? "statistisk signifikant" : "ikke statistisk signifikant"}</span>`;
     const w = Math.max(300, el.clientWidth || 900), h = Math.min(480, Math.max(320, w * 0.5)), m = { t: 12, r: 16, b: 42, l: 46 };
     el.innerHTML = "";
     const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
