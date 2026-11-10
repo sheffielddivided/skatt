@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elbiler i verden · Norge ASA</title>
+  <meta name="description" content="Elbilenes andel av nybilsalget og bilparken i over 60 land, utviklingen siden 2010, elbil mot ladbar hybrid i Europa, og incentivene som har drevet frem – og bremset – elbilsalget.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .controls #ind { width: 380px; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card, .grid2 > .card { margin-top: 0; }
+    .wmap svg { overflow: hidden; }
+    .wmap path.c { stroke: var(--surface); stroke-width: .4; cursor: pointer; }
+    .wmap path.na { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.sel { fill: none; stroke: var(--text); stroke-width: 1.8; pointer-events: none; }
+    .wmap .lg text { fill: var(--text-2); font-size: 11.5px; }
+    .rank { max-height: 600px; overflow: auto; }
+    .rank .r { display: grid; grid-template-columns: 26px minmax(0, 1fr) 100px 52px; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .rank .r:hover { background: var(--surface-2); }
+    .rank .r.no { background: color-mix(in srgb, var(--series-2) 14%, transparent); font-weight: 650; }
+    .rank .r.agg { color: var(--text-2); font-style: italic; }
+    .rank .r.pick { background: var(--surface-2); font-weight: 600; }
+    .rank .r .i { color: var(--text-3); font-size: 11.5px; }
+    .rank .r .b { height: 8px; border-radius: 3px; background: var(--neutral-mark); }
+    .rank .r.nord .b { background: var(--series-1); }
+    .rank .r.no .b { background: var(--series-2); }
+    .rank .r .v { text-align: right; font-variant-numeric: tabular-nums; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+    .chip .sw { width: 10px; height: 10px; border-radius: 3px; }
+    .chip button { border: 0; background: none; cursor: pointer; color: var(--text-3); width: 20px; height: 20px; border-radius: 50%; }
+    .chip button:hover { background: var(--surface-2); color: var(--text); }
+    .ev { cursor: help; }
+    .events { list-style: none; padding: 0; margin: 14px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px 22px; font-size: 13.5px; }
+    .events li { display: grid; grid-template-columns: 24px 54px 1fr; gap: 6px; align-items: baseline; color: var(--text-2); }
+    .events .n { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--text); color: var(--surface); font-size: 11px; font-weight: 700; }
+    .events b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .itab td.t { white-space: normal; }
+    .note { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .controls .field, .controls #ind { width: 100%; } .events li { grid-template-columns: 24px 48px 1fr; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 17</span>
+        <h1 class="display">Elbiler i verden</h1>
+        <p class="muted">Nesten alle nye biler i Norge er elektriske. Hvordan ligger andre land an? Her ser du elbilenes andel av nybilsalget og av bilparken i over 60 land, hvordan andelen har endret seg siden 2010, og hvordan avgifter og tilskudd har drevet salget frem eller bremset det.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="controls">
+        <div class="field"><label for="ind">Mål</label><select id="ind" class="select"></select></div>
+        <div class="field"><label for="yr">År</label><select id="yr" class="select"></select></div>
+      </div>
+      <p class="note" id="ind-note"></p>
+    </section>
+    <section class="kgrid">
+      <div class="card panel"><div class="panel-head"><div><h2 id="m-title"></h2><p>Grå land har ikke tall. Klikk på et land for å legge det til i sammenligningen.</p></div></div><div class="chart wmap" id="map"></div></div>
+      <div class="card panel"><div class="panel-head"><div><h2>Rangering</h2><p id="r-sub"></p></div></div><div class="rank" id="rank"></div></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head"><div><h2 id="t-title"></h2><p>Velg opptil sju land. Prikkene viser viktige endringer i tilskudd og avgifter. Hold musen over en prikk for å lese mer.</p></div></div>
+      <div class="chips" id="chips"></div>
+      <div style="display:flex;gap:8px;margin:10px 0 6px"><input class="input" id="addc" type="search" list="clist" placeholder="Legg til land …" autocomplete="off" style="width:240px"><datalist id="clist"></datalist></div>
+      <div class="chart" id="ts"></div>
+    </section>
+
+      <section class="card panel">
+        <div class="panel-head"><div><h2 id="sc-title">Fra nybilsalg til bilpark</h2><p id="sc-sub"></p></div></div>
+        <div class="chart" id="scatter"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head">
+          <div><h2 id="mix-title"></h2><p id="mix-sub"></p></div>
+          <div class="seg" role="group" aria-label="Nye biler eller bilparken" id="mixk">
+            <button data-v="new" aria-pressed="true">Nye biler</button>
+            <button data-v="fleet" aria-pressed="false">Bilparken</button>
+          </div>
+        </div>
+        <div class="legend" id="mix-legend"></div>
+        <div class="chart" id="mix"></div>
+      </section>
+
+    <h2 class="display section-title">Norge: fra 1 til 99 prosent</h2>
+    <p class="section-lead">Elbiler har hatt avgiftsfordeler i Norge siden 1990, men salget tok ikke av før det kom gode og rimelige modeller rundt 2013. Grafen viser drivstoff for nye personbiler hver måned. Tallene viser til hendelsene i listen under.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Nye personbiler i Norge etter drivstoff</h2><p id="no-sub"></p></div>
+        <div class="seg" role="group" aria-label="Periode" id="noper">
+          <button data-v="2008" aria-pressed="false">2008–</button>
+          <button data-v="2012" aria-pressed="true">2012–</button>
+          <button data-v="2020" aria-pressed="false">2020–</button>
+        </div>
+      </div>
+      <div class="legend" id="no-legend"></div>
+      <div class="chart" id="noarea"></div>
+      <ol class="events" id="no-events"></ol>
+    </section>
+    <section class="card panel">
+      <div class="panel-head"><div><h2>Ikke bare nye personbiler</h2><p>Elandel av nye personbiler, bruktimporterte personbiler og nye vare- og campingbiler per år. Siste år er hittil i år.</p></div></div>
+      <div class="legend" id="no2-legend"></div>
+      <div class="chart" id="noline"></div>
+    </section>
+
+    <h2 class="display section-title">Tilskudd og avgifter i andre land</h2>
+    <p class="section-lead">Elbilsalget følger ofte endringer i avgifter og tilskudd. Da Sverige og Tyskland fjernet kjøpstilskuddet, falt salget. Da Danmark gradvis innførte registreringsavgift på elbiler i 2016, stoppet salget nesten opp. Tabellen er et utvalg av større endringer. Klikk på et land for å se det i grafen over.</p>
+    <section class="card panel">
+      <div id="itab"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle land</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Hva er en elbil?</h3><p>IEA regner både helelektriske biler og ladbare hybrider som elbiler. Det er dette som brukes i kartet og rangeringen. Eurostat skiller mellom dem, og målene merket «helelektriske» teller bare biler som går på strøm alene. Vanlige hybrider som ikke kan lades, er aldri med.</p></div>
+      <div><h3>Om tallene</h3><p>IEA runder andelene i mange land til hele prosent. Bilparken er alle registrerte personbiler, også de som står mye. Tallene for Norge måned for måned er førstegangsregistrerte personbiler. SSB fører ladbare hybrider sammen med vanlige hybrider.</p></div>
+      <div><h3>Kilder</h3><p>IEA, <a href="https://www.iea.org/reports/global-ev-outlook-2025">Global EV Outlook</a>, hentet via <a href="https://ourworldindata.org/electric-car-sales">Our World in Data</a> (CC BY 4.0). Eurostat road_eqr_carpda og road_eqs_carpda. SSB tabell <a href="https://www.ssb.no/statbank/table/14020">14020</a>. Oversikten over incentiver er vår egen og forenklet, basert på offentlige kilder i hvert land. Kart: Eurostat GISCO.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: IEA (via Our World in Data), Eurostat og SSB · Kart: © EuroGeographics (Eurostat GISCO)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/elbil.js"></script>
+</body>
+</html>

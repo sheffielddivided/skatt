@@ -52,6 +52,7 @@
       ["europa.html", "Norge i Europa", "Norge sammenlignet med 29 land"],
       ["hverdag.html", "Leger, lærere og våpen", "Hverdagen i Europa – fra leger til biler"],
       ["handel.html", "Handelen med verden", "Eksport og import – med og uten olje og gass"],
+      ["elbil.html", "Elbiler i verden", "Andel av nybilsalg og bilpark i 60 land"],
       ["rettsstat.html", "Rettsstaten i verden", "Korrupsjon, rettigheter og domstoler i 143 land"],
     ] },
   ];
