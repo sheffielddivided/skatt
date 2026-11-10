@@ -32,6 +32,7 @@ jobs:
           python scripts/build_rettsstat.py
           python scripts/build_handel.py
           python scripts/build_elbil.py
+          python scripts/build_bolig.py
       - name: Commit hvis endret
         run: |
           if git diff --quiet -- data; then
