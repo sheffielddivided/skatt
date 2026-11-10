@@ -43,6 +43,7 @@
       ["naering.html", "Næringslivet", "Hva kommunene lever av"],
       ["ulikhet.html", "Inntektsulikhet", "Forskjeller og lavinntekt"],
       ["kommunehverdag.html", "Leger, hytter og snøscootere", "Kommune-Norge i morsomme tall"],
+      ["brann.html", "Boligbranner", "Brann, boligpris og flytting i kommunene"],
     ] },
     { group: "Befolkning", items: [
       ["alder.html", "Aldersbølgen", "Befolkningspyramider 1986–i dag"],

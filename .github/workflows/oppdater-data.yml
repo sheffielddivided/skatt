@@ -29,6 +29,7 @@ jobs:
           python scripts/build_europa.py
           python scripts/build_hverdag.py
           python scripts/build_kommunehverdag.py
+          python scripts/build_brann.py
           python scripts/build_rettsstat.py
           python scripts/build_handel.py
           python scripts/build_elbil.py

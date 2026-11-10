@@ -21,6 +21,7 @@
     if (i.unit.startsWith("%")) return S.pct(v, short ? 0 : 1, key === "vekst");
     if (i.unit === "år") return S.nf1.format(v) + (short ? "" : " år");
     if (key === "fb") return S.nf1.format(v);
+    if (i.dec != null) return v.toLocaleString("nb-NO", { minimumFractionDigits: i.dec, maximumFractionDigits: i.dec });
     if (short && v >= 10000) return S.nf0.format(Math.round(v / 1000)) + "k";
     return Math.abs(v) < 100 && Math.round(v) !== v ? S.nf1.format(v) : S.int(v);
   }
