@@ -200,5 +200,43 @@
     return { update(newRows) { rows = newRows; render(); } };
   }
 
-  window.Skatt = { SITE, MENU, isDark, onThemeChange, mill, kr, int, pct, signed, nf0, nf1, MONTHS, MONTHS_SHORT, tooltip, escapeHtml, downloadCsv, sortableTable };
+
+  // ---------------------------------------------------------------- statistikk
+  // Signifikanstest for en korrelasjon r med n observasjoner: tosidig t-test av H0 «ingen sammenheng»
+  // (t = r·√((n−2)/(1−r²)), n−2 frihetsgrader) og 95 % konfidensintervall via Fishers z.
+  // vf = variansfaktor for z (1 for Pearson, 1,06 for Spearman).
+  function lgamma(x) {
+    const c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+    let y = x, t = x + 5.5; t -= (x + 0.5) * Math.log(t);
+    let ser = 1.000000000190015; for (const ci of c) ser += ci / ++y;
+    return -t + Math.log((2.5066282746310005 * ser) / x);
+  }
+  function betacf(a, b, x) {
+    let qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - (qab * x) / qap;
+    d = 1 / (Math.abs(d) < 1e-300 ? 1e-300 : d); let h = d;
+    for (let m = 1; m <= 300; m++) {
+      const m2 = 2 * m;
+      let aa = (m * (b - m) * x) / ((qam + m2) * (a + m2));
+      d = 1 + aa * d; d = 1 / (Math.abs(d) < 1e-300 ? 1e-300 : d); c = 1 + aa / c; c = Math.abs(c) < 1e-300 ? 1e-300 : c; h *= d * c;
+      aa = (-(a + m) * (qab + m) * x) / ((a + m2) * (qap + m2));
+      d = 1 + aa * d; d = 1 / (Math.abs(d) < 1e-300 ? 1e-300 : d); c = 1 + aa / c; c = Math.abs(c) < 1e-300 ? 1e-300 : c;
+      const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-12) break;
+    }
+    return h;
+  }
+  function ibeta(a, b, x) {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    const bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x));
+    return x < (a + 1) / (a + b + 2) ? (bt * betacf(a, b, x)) / a : 1 - (bt * betacf(b, a, 1 - x)) / b;
+  }
+  function signif(r, n, vf = 1) {
+    const df = n - 2, t = r * Math.sqrt(df / Math.max(1e-12, 1 - r * r));
+    const p = ibeta(df / 2, 0.5, df / (df + t * t));
+    const z = Math.atanh(r), se = Math.sqrt(vf / (n - 3));
+    return { t, df, p, lo: Math.tanh(z - 1.96 * se), hi: Math.tanh(z + 1.96 * se) };
+  }
+  const fmtP = (p) => (p == null || !isFinite(p) ? "–" : p < 0.001 ? "p < 0,001" : `p = ${p < 0.01 ? p.toFixed(3) : p.toFixed(2)}`.replace(".", ","));
+  const stats = { signif, ibeta, fmtP };
+
+  window.Skatt = { stats, SITE, MENU, isDark, onThemeChange, mill, kr, int, pct, signed, nf0, nf1, MONTHS, MONTHS_SHORT, tooltip, escapeHtml, downloadCsv, sortableTable };
 })();

@@ -101,7 +101,7 @@
     for (const [x, y] of pts) { sxy += (x - mx) * (y - my); sxx += (x - mx) ** 2; syy += (y - my) ** 2; }
     const r = sxy / Math.sqrt(sxx * syy);
     const b = sxy / sxx;
-    return { r, b, a: my - b * mx, n };
+    return { r, b, a: my - b * mx, n, ...S.stats.signif(r, n) };
   }
   function strength(r) {
     const a = Math.abs(r);
@@ -157,7 +157,10 @@
       }
       if (line.length > 1) svg.append("path").attr("class", "trend").attr("d", d3.line()(line));
     }
-    document.getElementById("corr").innerHTML = fit ? `<span class="pill accent">r = ${fit.r.toFixed(2).replace(".", ",").replace("-", "−")}</span><span>${strength(fit.r)} blant alle ${fit.n} kommuner</span>${fitF ? `<span class="pill">${S.escapeHtml(fylkeName(st.f))}: r = ${fitF.r.toFixed(2).replace(".", ",").replace("-", "−")}</span>` : ""}` : "";
+    const rTxt = (v) => v.toFixed(2).replace(".", ",").replace("-", "−");
+    const sigTxt = (f) => (f.p < 0.05 ? "statistisk signifikant" : "ikke statistisk signifikant");
+    const testTip = (f, where) => `Pearsons r = ${rTxt(f.r)} for ${f.n} kommuner${where}. 95 % konfidensintervall ${rTxt(f.lo)} til ${rTxt(f.hi)}. Tosidig t-test: t = ${S.nf1.format(f.t).replace("-", "−")} med ${f.df} frihetsgrader, ${S.stats.fmtP(f.p)}. Nabokommuner ligner ofte på hverandre, så p-verdien er noe for optimistisk.${LOG.has(st.x) || LOG.has(st.y) ? " Korrelasjonen er regnet på logaritmisk skala for aksene som vises logaritmisk." : ""}`;
+    document.getElementById("corr").innerHTML = fit ? `<span class="pill accent" title="${S.escapeHtml(testTip(fit, ""))}">r = ${rTxt(fit.r)}</span><span title="${S.escapeHtml(testTip(fit, ""))}">${strength(fit.r)} blant alle ${fit.n} kommuner · 95 % KI ${rTxt(fit.lo)} til ${rTxt(fit.hi)} · ${S.stats.fmtP(fit.p)}, ${sigTxt(fit)}</span>${fitF && fitF.n > 3 ? `<span class="pill" title="${S.escapeHtml(testTip(fitF, ` i ${fylkeName(st.f)}`))}">${S.escapeHtml(fylkeName(st.f))}: r = ${rTxt(fitF.r)} · ${S.stats.fmtP(fitF.p)}</span>` : ""}` : "";
 
     // prikker
     const rr = d3.scaleSqrt([0, d3.max(pts, (p) => p.pop)], [2.2, 22]);
