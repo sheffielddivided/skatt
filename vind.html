@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vindkraft i Europa · Norge ASA</title>
+  <meta name="description" content="Hvor mye vindkraft har landene i Europa? Installert kapasitet, produksjon, andel av strømmen, land- og havvind, sesongvariasjon, støtteordninger og subsidier, og alle norske vindkraftverk.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .controls .select { min-width: 150px; }
+    .controls #sx { width: 300px; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card, .grid2 > .card { margin-top: 0; }
+    .kgrid > *, .grid2 > * { min-width: 0; }
+    .wmap svg { overflow: hidden; }
+    .wmap path.c { stroke: var(--surface); stroke-width: .4; cursor: pointer; }
+    .wmap path.na { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.sel { fill: none; stroke: var(--text); stroke-width: 1.8; pointer-events: none; }
+    .wmap .lg text { fill: var(--text-2); font-size: 11.5px; }
+    .rank { max-height: 470px; overflow: auto; }
+    .rank .r { display: grid; grid-template-columns: 30px minmax(0, 1fr) 110px 64px; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .rank .r:hover { background: var(--surface-2); }
+    .rank .r.no { background: color-mix(in srgb, var(--series-2) 14%, transparent); font-weight: 650; }
+    .rank .r.agg { color: var(--text-2); font-style: italic; }
+    .rank .r.pick { background: var(--surface-2); font-weight: 600; }
+    .rank .r .i { color: var(--text-3); font-size: 11.5px; }
+    .rank .r .bw { position: relative; height: 8px; }
+    .rank .r .bw .z { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--border-strong); }
+    .rank .r .b { position: absolute; top: 0; height: 8px; border-radius: 3px; background: var(--neutral-mark); }
+    .rank .r.nord .b { background: var(--series-1); }
+    .rank .r.no .b { background: var(--series-2); }
+    .rank .r .v { text-align: right; font-variant-numeric: tabular-nums; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+    .chip .sw { width: 10px; height: 10px; border-radius: 3px; }
+    .chip button { border: 0; background: none; cursor: pointer; color: var(--text-3); width: 20px; height: 20px; border-radius: 50%; }
+    .chip button:hover { background: var(--surface-2); color: var(--text); }
+    .note { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; max-width: 95ch; }
+    .note b { color: var(--text-2); }
+    .stat-line { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--text-2); margin: 4px 0 6px; }
+    .stat-line b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .chart svg text.sm { font-size: 11px; fill: var(--text-3); }
+    .row-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--text-2); margin-bottom: 6px; }
+    .row-legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+    .row-legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .controls .field, .controls .select, .controls #sx { width: 100%; } .rank .r { grid-template-columns: 26px minmax(0, 1fr) 80px 58px; } }
+      .scheme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 14px; }
+    .scheme { padding: 16px 18px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+    .scheme.no { border-color: var(--series-2); box-shadow: 0 0 0 1px var(--series-2) inset; }
+    .scheme h3 { font-size: 16px; margin: 0 0 6px; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .scheme h3 small { font-weight: 500; color: var(--text-3); font-size: 12px; }
+    .scheme p { margin: 6px 0 0; font-size: 13px; color: var(--text-2); }
+    .scheme p b { color: var(--text); font-weight: 600; }
+    .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); }
+    .tag.cfd { background: color-mix(in srgb, var(--series-1) 14%, transparent); border-color: color-mix(in srgb, var(--series-1) 35%, transparent); }
+    .tag.fit { background: color-mix(in srgb, var(--series-5) 14%, transparent); border-color: color-mix(in srgb, var(--series-5) 35%, transparent); }
+    .tag.cert { background: color-mix(in srgb, var(--series-3) 14%, transparent); border-color: color-mix(in srgb, var(--series-3) 35%, transparent); }
+    .timeline { list-style: none; padding: 0; margin: 10px 0 0; }
+    .timeline li { display: grid; grid-template-columns: 92px 120px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13.5px; align-items: baseline; }
+    .timeline li .d { color: var(--text-3); font-variant-numeric: tabular-nums; }
+    .timeline li .k { font-weight: 600; }
+    .timeline li .k i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .nomap path.k { fill: var(--map-empty); stroke: var(--surface); stroke-width: .5; }
+    .nomap path.f { fill: none; stroke: var(--border-strong); stroke-width: .8; pointer-events: none; }
+    @media (max-width: 720px) { .timeline li { grid-template-columns: 70px minmax(0, 1fr); } .timeline li .t { grid-column: 1 / -1; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+    <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 22</span>
+        <h1 class="display">Vindkraft i Europa</h1>
+        <p class="muted">Hvor mye vindkraft har landene i Europa bygget, og hvor mye strøm gir den? Her er installert kapasitet og produksjon i 39 land fra 1990 til i dag, målt i absolutte tall, per innbygger og som andel av all kraft. Vi ser på forskjellen mellom land- og havvind, hvordan vindkraften varierer gjennom året, hvordan den subsidieres i ulike land, og på alle vindkraftverkene i Norge.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="controls">
+        <div class="field"><label for="ind">Mål</label><select id="ind" class="select" style="width:340px"></select></div>
+        <div class="field"><label for="year">År</label><select id="year" class="select"></select></div>
+      </div>
+      <p class="note" id="ind-note"></p>
+    </section>
+    <section class="kgrid">
+      <div class="card panel">
+        <div class="panel-head"><div><h2 id="m-title"></h2><p id="m-sub"></p></div></div>
+        <div class="chart wmap" id="map"></div>
+      </div>
+      <div class="card panel"><div class="panel-head"><div><h2>Rangering</h2><p id="r-sub"></p></div></div><div class="rank" id="rank"></div></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head"><div><h2 id="t-title"></h2><p id="t-sub"></p></div></div>
+      <div class="chips" id="chips"></div>
+      <div style="display:flex;gap:8px;margin:10px 0 6px"><input class="input" id="addc" type="search" list="clist" placeholder="Legg til land …" autocomplete="off" style="width:240px"><datalist id="clist"></datalist></div>
+      <div class="chart" id="ts"></div>
+    </section>
+
+    <h2 class="display section-title">Kapasitet er ikke det samme som strøm</h2>
+    <p class="section-lead">En vindturbin produserer bare full effekt når det blåser godt. Kapasitetsfaktoren viser hvor stor del av den teoretiske maksimalproduksjonen turbinene faktisk leverer gjennom året. Derfor utgjør vindkraften en mindre andel av strømproduksjonen enn av den installerte kapasiteten i nesten alle land.</p>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Andel av kapasiteten og av produksjonen</h2><p id="sc-sub"></p></div></div>
+        <div class="chart" id="scatter"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Kapasitetsfaktor</h2><p id="cf-sub"></p></div></div>
+        <div class="chart" id="cfbars"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Land- og havvind</h2>
+    <p class="section-lead">Havvind blåser jevnere og sterkere, men er dyrere å bygge. Storbritannia, Tyskland, Nederland, Danmark og Belgia står for nesten all havvinden i Europa. Norge har så langt bare et par flytende testanlegg og Hywind Tampen.</p>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Landvind og havvind per land</h2><p id="oo-sub"></p></div></div>
+        <div class="row-legend"><span><i class="dot" style="background:var(--series-3)"></i>Landvind</span><span><i class="dot" style="background:var(--series-1)"></i>Havvind</span></div>
+        <div class="chart" id="onoff"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Utbyggingen i Europa</h2><p id="eu-sub"></p></div></div>
+        <div class="row-legend"><span><i class="dot" style="background:var(--series-3)"></i>Landvind</span><span><i class="dot" style="background:var(--series-1)"></i>Havvind</span></div>
+        <div class="chart" id="eugrowth"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Når blåser det?</h2>
+    <p class="section-lead">Vindkraften varierer mye fra måned til måned og fra år til år. I Nord-Europa blåser det mest om vinteren, når strømforbruket også er høyest. Månedstallene fra Eurostat viser vindkraftens andel av strømproduksjonen.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="mo-title"></h2><p id="mo-sub"></p></div>
+        <div class="controls">
+          <div class="field"><label for="mc">Land</label><select id="mc" class="select"></select></div>
+          <div class="field"><span class="label" id="mm-label">Vis</span>
+            <div class="seg" role="group" aria-labelledby="mm-label" id="mmode">
+              <button data-v="share" aria-pressed="true">Andel</button>
+              <button data-v="gwh" aria-pressed="false">GWh</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="kgrid" style="margin-top:0">
+        <div><div class="chart" id="season"></div></div>
+        <div><div class="chart" id="mts"></div></div>
+      </div>
+    </section>
+
+    <h2 class="display section-title">Hvordan subsidieres vindkraften?</h2>
+    <p class="section-lead">Nesten alle land har støttet vindkraften, men på svært ulike måter: faste innmatingstariffer, premier på toppen av markedsprisen, grønne sertifikater betalt av strømkundene, og stadig oftere tosidige differansekontrakter (CfD) der staten garanterer en pris, men får penger tilbake når markedsprisen er høyere. Da strømprisene var rekordhøye i 2022 og 2023, betalte vindkraftprodusentene i flere land tilbake mer enn de fikk.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="sl-title">Støtte per MWh vindkraft</h2><p id="sl-sub"></p></div>
+        <div class="controls">
+          <div class="field"><span class="label" id="tech-label">Teknologi</span>
+            <div class="seg" role="group" aria-labelledby="tech-label" id="tech">
+              <button data-v="on" aria-pressed="true">Landvind</button>
+              <button data-v="off" aria-pressed="false">Havvind</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row-legend"><span><i class="dot" style="background:var(--neutral-mark)"></i>2022</span><span><i class="dot" style="background:var(--series-1)"></i>2023, støtte</span><span><i class="dot" style="background:var(--series-5)"></i>2023, tilbakebetaling</span></div>
+      <div class="chart" id="lvl"></div>
+      <p class="note" id="lvl-note"></p>
+    </section>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Beregnet støtte til vindkraft 2023</h2><p id="cost-sub"></p></div></div>
+        <div class="chart" id="cost"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Hvor mye av vindkraften får støtte?</h2><p id="sup-sub"></p></div></div>
+        <div class="chart" id="supshare"></div>
+      </section>
+    </div>
+    <section class="card panel">
+      <div class="panel-head"><div><h2>Støtte til all fornybar kraft, 2022</h2><p id="all-sub"></p></div></div>
+      <div class="chart" id="allres"></div>
+    </section>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Støtteordningene land for land</h2><p>Hovedtrekk i ordningene for vindkraft. Fargene viser type ordning: <span class="tag fit">tariff/premie</span> <span class="tag cert">sertifikater</span> <span class="tag cfd">differansekontrakt (CfD)</span></p></div>
+      </div>
+      <div class="scheme-grid" id="schemes"></div>
+    </section>
+    <section class="card panel">
+      <div class="panel-head"><div><h2>Havvindauksjoner: fra betaling til staten til nye subsidier</h2><p>Da kostnadene falt, betalte selskapene for retten til å bygge havvind. Etter renteøkningene og prisstigningen på turbiner har flere anbud uten støtte endt uten bud, og landene innfører garantier igjen.</p></div></div>
+      <ul class="timeline" id="auctions"></ul>
+    </section>
+
+    <h2 class="display section-title">Vindkraft i Norge</h2>
+    <p class="section-lead">Norsk vindkraft ble i hovedsak bygget mellom 2017 og 2021, mens elsertifikatordningen ga støtte. Siden har nesten ingen nye landvindparker fått konsesjon. Her er produksjonen fra SSB og alle vindkraftverkene i drift ifølge NVE.</p>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Vindkraftproduksjon i Norge</h2><p id="no-sub"></p></div></div>
+        <div class="chart" id="nots"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Vindkraftverkene</h2><p id="nomap-sub"></p></div></div>
+        <div class="chart nomap" id="nomap"></div>
+      </section>
+    </div>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Turbinene blir større</h2><p id="turb-sub"></p></div></div>
+        <div class="chart" id="turb"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Alle vindkraftverk i drift</h2><p id="pl-sub"></p></div></div>
+        <div id="plants" style="max-height:460px;overflow:auto"></div>
+      </section>
+    </div>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle land</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Kapasitet, produksjon og andeler</h3><p>Installert kapasitet er den samlede effekten til turbinene (GW). Produksjon er strømmen de faktisk leverer (TWh). Andelen av produksjonen er vindkraft delt på all strømproduksjon i landet, mens andelen av forbruket sammenligner med etterspørselen inkludert import. Kapasitetsfaktoren er produksjonen delt på det turbinene ville produsert med full effekt hele året, regnet med snittet av kapasiteten ved inngangen og utgangen av året.</p></div>
+      <div><h3>Om støttetallene</h3><p>CEER (samarbeidsorganet for europeiske energiregulatorer) samler hvert annet år inn tall fra regulatorene. Støttenivået er beregnet som utbetalt tariff eller premie minus markedsprisen, og er derfor negativt når markedsprisen var høyere enn den garanterte prisen. Tallene dekker bare anlegg som er med i en støtteordning, ikke skattefordeler, nettilknytning eller investeringstilskudd. Norge er ikke med i CEERs oversikt.</p></div>
+      <div><h3>Kilder</h3><p><a href="https://ember-energy.org/data/yearly-electricity-data/">Ember</a> (CC BY 4.0): kapasitet, produksjon og forbruk. Eurostat <a href="https://ec.europa.eu/eurostat/databrowser/view/nrg_inf_epcrw/default/table">nrg_inf_epcrw</a> og <a href="https://ec.europa.eu/eurostat/databrowser/view/nrg_cb_pem/default/table">nrg_cb_pem</a>. Verdensbanken (folketall, areal). <a href="https://www.ceer.eu/publication/status-review-of-renewable-support-schemes-in-europe-for-2022-and-2023/">CEER</a> (støtte). NVE (vindkraftverk), SSB tabell <a href="https://www.ssb.no/statbank/table/08307">08307</a>. Auksjoner: regjeringen.no, Bundesnetzagentur, Energistyrelsen, DESNZ. Kart: Eurostat GISCO og Kartverket.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Ember, Eurostat, CEER, NVE, SSB · Kart: © EuroGeographics (Eurostat GISCO), Kartverket</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/vind.js"></script>
+</body>
+</html>

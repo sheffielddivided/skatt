@@ -57,6 +57,7 @@
       ["elbil.html", "Elbiler i verden", "Andel av nybilsalg og bilpark i 60 land"],
       ["bolig.html", "Boligpriser i verden", "Boligpriser, husleie og inntekt i 50 land"],
       ["inflasjon.html", "Inflasjon i verden", "Prisvekst, rente, pengemengde og budsjett i 190 land"],
+      ["vind.html", "Vindkraft i Europa", "Kapasitet, produksjon og subsidier i 39 land"],
       ["rettsstat.html", "Rettsstaten i verden", "Korrupsjon, rettigheter og domstoler i 143 land"],
     ] },
   ];
