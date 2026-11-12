@@ -696,6 +696,39 @@
   }
   seg("noper", (v) => { st.noper = +v; noHist(); });
 
+
+  // ---------------------------------------------------------------- skjult skatt: kalkulator og kjøpekraft
+  function calc() {
+    const g = (id) => +document.getElementById(id).value || 0;
+    const pi = g("k-infl") / 100, i = g("k-rente") / 100, t = g("k-skatt") / 100, n = Math.max(0, Math.round(g("k-aar"))), b = g("k-belop");
+    const iat = i * (1 - t), realAt = (1 + iat) / (1 + pi) - 1, realPre = (1 + i) / (1 + pi) - 1;
+    const effTax = realPre > 0 ? (100 * (realPre - realAt)) / realPre : null;
+    const endNom = b * Math.pow(1 + iat, n), endReal = endNom / Math.pow(1 + pi, n), taxPaid = d3.sum(d3.range(n), (k) => b * Math.pow(1 + iat, k) * i * t);
+    const cash = b / Math.pow(1 + pi, n);
+    const kr = (v) => S.nf0.format(Math.round(v)).replace("-", "−") + " kr";
+    const box = (l, v, s2) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s2}</div></div>`;
+    document.getElementById("k-out").innerHTML = [
+      box("Realrente etter skatt", pc(100 * realAt), `Før skatt: ${pc(100 * realPre)}`),
+      box("Skatt målt mot realavkastningen", effTax == null ? "over 100 %" : pc(effTax), effTax == null ? "Ingen reell avkastning å skattlegge, men det betales skatt likevel" : `Mot ${f0(100 * t)} % nominell skattesats`),
+      box(`Sparing etter ${n} år, i dagens kroner`, kr(endReal), `Nominelt ${kr(endNom)} · skatt betalt ${kr(taxPaid)}`),
+      box(`Kontanter etter ${n} år, i dagens kroner`, kr(cash), `Tap av kjøpekraft: ${kr(b - cash)}`),
+    ].join("");
+    document.getElementById("k-note").innerHTML = `Med disse tallene ${realAt < 0 ? "<b>taper sparingen seg i verdi</b> etter skatt, selv om banken betaler rente" : "vokser sparingen litt reelt"}. Uten inflasjon og med samme realrente før skatt (${pc(100 * realPre)}) ville skatten tatt ${f0(100 * t)} % av avkastningen. Skatten betales av den nominelle renten, også den delen som bare kompenserer for prisstigningen. Det er dette som gjør inflasjonen til en skjult skatt på sparing.`;
+  }
+  ["k-infl", "k-rente", "k-skatt", "k-aar", "k-belop"].forEach((id) => document.getElementById(id).addEventListener("input", calc));
+  function priceLevel() {
+    const el = document.getElementById("plevel"), y0 = 1960;
+    const cs = [["NOR", "var(--series-2)", 3], ["SWE", "var(--series-1)"], ["CHE", "var(--series-3)"], ["DEU", "var(--series-4)"], ["USA", "var(--series-7)"], ["GBR", "var(--series-5)"]];
+    const ser = cs.map(([c, col, wd]) => {
+      let v = 100; const pts = [[y0, 100]];
+      for (let y = y0 + 1; y <= LAST; y++) { const p = val("infl", c, y); if (p == null) { if (y >= LAST - 1) break; return { c, col, wd, pts: [] }; } v = v / (1 + p / 100); pts.push([y, v]); }
+      return { c, col, wd, pts };
+    }).filter((s) => s.pts.length);
+    const no = ser.find((s) => s.c === "NOR"), last = no.pts[no.pts.length - 1][1];
+    let half = null; for (const p of no.pts) if (p[1] <= 50) { half = p[0]; break; }
+    document.getElementById("pl-sub").textContent = `Hva 100 kroner fra ${y0} er verdt i kjøpekraft år for år, regnet med årlig inflasjon. 100 kr i ${y0} kjøper like mye som ${S.nf0.format(Math.round((100 * 100) / last))} kr i ${LAST}. Kronen hadde mistet halve verdien allerede i ${half}. Andre land: 100 enheter av landets egen valuta.`;
+    lineChart(el, { series: ser.map((s) => ({ label: name(s.c), color: s.col, w: s.wd, pts: s.pts })), endLabels: true, xfmt: (x) => String(Math.round(x)), vfmt: (v) => (v == null ? "–" : S.nf1.format(v)), h: 320, xdom: [y0, LAST] });
+  }
   // ---------------------------------------------------------------- tabell
   function table() {
     const y10 = LAST - 9;
@@ -730,8 +763,9 @@
 
   // ---------------------------------------------------------------- alt sammen
   function analysis() { corr(); scatter(); lagChart(); }
-  function renderAll() { kpis(); wmap(); rank(); series(); analysis(); countryView(); monthly(); wave(); targets(); noHist(); }
+  function renderAll() { kpis(); wmap(); rank(); series(); analysis(); countryView(); monthly(); wave(); targets(); noHist(); priceLevel(); }
   renderAll();
+  calc();
   table();
   document.getElementById("updated").textContent = `Data hentet ${d.fetched}`;
   S.onThemeChange(() => { wmap(); rank(); });
