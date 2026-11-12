@@ -35,6 +35,8 @@ jobs:
           python scripts/build_handel.py
           python scripts/build_elbil.py
           python scripts/build_bolig.py
+          python scripts/build_inflasjon.py
+          python scripts/build_vind.py
       - name: Commit hvis endret
         run: |
           if git diff --quiet -- data; then

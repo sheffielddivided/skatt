@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Norge ASA – skatt, velferd og samfunn i tall</title>
-  <meta name="description" content="Norge ASA: interaktive studier av norsk skatt, offentlig pengebruk, kommuner og befolkning, og Norge sammenlignet med resten av verden. Basert på åpne data fra SSB, FHI, Eurostat, OECD og IEA.">
+  <meta name="description" content="Norge ASA: interaktive studier av norsk skatt, offentlig pengebruk, kommuner og befolkning, og Norge sammenlignet med resten av verden. Basert på åpne data fra SSB, FHI, Eurostat, OECD, IEA, Verdensbanken og BIS.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -87,7 +87,7 @@
       <div>
         <span class="eyebrow">Skatt, velferd og samfunn i tall</span>
         <h1 class="display">Norge, <em>målt og veid</em></h1>
-        <p class="lead">Hvor kommer pengene fra, og hvor går de? Hvordan står Norge seg mot resten av verden? Her finner du interaktive studier av skatt, offentlig pengebruk, kommuner og befolkning, og av handel, elbiler og rettsstat i andre land. Alle tall hentes fra åpne kilder som SSB, FHI, Eurostat, OECD og IEA, og oppdateres jevnlig.</p>
+        <p class="lead">Hvor kommer pengene fra, og hvor går de? Hvordan står Norge seg mot resten av verden? Her finner du interaktive studier av skatt, offentlig pengebruk, kommuner og befolkning, og av handel, elbiler, boligpriser, inflasjon, vindkraft og rettsstat i andre land. Alle tall hentes fra åpne kilder som SSB, FHI, Eurostat, OECD og IEA, og oppdateres jevnlig.</p>
       </div>
       <div class="stats" id="stats" aria-live="polite">
         <div class="card stat"><div class="l">Skatteinngang i alt</div><div class="v">–</div><div class="s">&nbsp;</div></div>
@@ -282,6 +282,24 @@
           <h3 class="display">Sykefraværet i kommunene</h3>
           <p>Hvor er sykefraværet høyest, og hvorfor? Se legemeldt sykefravær i alle kommuner fordelt på kjønn og alder, justert for befolkningssammensetning, og sammenhengen med uføretrygd og utdanning.</p>
           <div class="meta"><span class="pill">FHI</span><span class="pill">SSB</span><span class="go">Utforsk →</span></div>
+        </div>
+      </a>
+      <a class="card study" data-g="internasjonalt" href="inflasjon.html">
+        <div class="thumb" id="thumb-in" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 21 · Internasjonalt</span>
+          <h3 class="display">Inflasjon i verden</h3>
+          <p>Hvorfor stiger prisene raskere i noen land? Inflasjonen i 190 land siden 1960 sammenholdt med rente, pengemengde, statsbudsjett og valutakurs, inflasjonsbølgen 2021–2023 og hundre år med norsk prisvekst.</p>
+          <div class="meta"><span class="pill">Verdensbanken</span><span class="pill">BIS</span><span class="go">Utforsk →</span></div>
+        </div>
+      </a>
+      <a class="card study" data-g="internasjonalt" href="vind.html">
+        <div class="thumb" id="thumb-vi" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 22 · Internasjonalt</span>
+          <h3 class="display">Vindkraft i Europa</h3>
+          <p>Hvor mye vindkraft har landene i Europa, og hvor mye strøm gir den? Kapasitet og produksjon per land og per innbygger, land- og havvind, støtteordninger og subsidier, og alle norske vindkraftverk.</p>
+          <div class="meta"><span class="pill">Ember</span><span class="pill">Eurostat</span><span class="pill">CEER</span><span class="pill">NVE</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
       <div class="card study soon">
@@ -673,8 +691,44 @@
         svg.append("text").attr("x", x(Y[Y.length - 1]) + 6).attr("y", y(v[v.length - 1]) + 4).attr("fill", "var(--text-2)").attr("font-size", 11.5).text(`${n} ${v[v.length - 1].toFixed(1).replace(".", ",")} %`);
       });
     }
-    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf();
-    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); });
+    const inf = await fetch("data/inflasjon.json").then((r) => r.json());
+    function drawIn() {
+      const el = document.getElementById("thumb-in");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { l: 30, r: 74, t: 30, b: 22 };
+      const M = inf.monthly, pts = [], pol = [];
+      M.months.forEach((mm, i) => { const x = +mm.slice(0, 4) + (+mm.slice(5) - 1) / 12; if (x >= 1970) { if (M.cpi.NOR?.[i] != null) pts.push([x, M.cpi.NOR[i]]); if (M.pol.NOR?.[i] != null) pol.push([x, M.pol.NOR[i]]); } });
+      const x = d3.scaleLinear([1970, pts[pts.length - 1][0]], [m.l, w - m.r]), y = d3.scaleLinear([0, d3.max(pts.concat(pol), (p) => p[1])], [h - m.b, m.t]).nice();
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("text").attr("x", 24).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text("Norge siden 1970: inflasjon og styringsrente, %");
+      [[pol, "Rente", "var(--series-1)"], [pts, "Inflasjon", "var(--series-2)"]].forEach(([p, n, c]) => {
+        svg.append("path").datum(p).attr("fill", "none").attr("stroke", c).attr("stroke-width", 2).attr("d", d3.line().x((q) => x(q[0])).y((q) => y(q[1])));
+        const lp = p[p.length - 1];
+        svg.append("text").attr("x", x(lp[0]) + 6).attr("y", y(lp[1]) + (n === "Rente" ? -4 : 12)).attr("fill", "var(--text-2)").attr("font-size", 11.5).attr("font-weight", 600).text(`${n} ${lp[1].toFixed(1).replace(".", ",")}`);
+      });
+    }
+    const vi = await fetch("data/vind.json").then((r) => r.json());
+    function drawVi() {
+      const el = document.getElementById("thumb-vi");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { l: 30, r: 82, t: 30, b: 20 }, Y = vi.years, i0 = Y.indexOf(2000);
+      const sh = (c, i) => { const a = vi.ember.gen.wind[c]?.[i], b = vi.ember.gen.total_generation[c]?.[i]; return a != null && b ? (100 * a) / b : null; };
+      const ser = [["DNK", "Danmark", "var(--series-1)"], ["DEU", "Tyskland", "var(--series-3)"], ["EUR", "Europa", "var(--neutral-mark)"], ["NOR", "Norge", "var(--series-2)"]].map(([c, n, col]) => ({ c, n, col, pts: Y.map((y, i) => [y, i < i0 ? null : sh(c, i)]).filter((p) => p[1] != null) }));
+      const x = d3.scaleLinear([2000, Y[Y.length - 1]], [m.l, w - m.r]), y = d3.scaleLinear([0, 60], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("text").attr("x", 24).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text("Vindkraftens andel av strømproduksjonen, %");
+      const labs = [];
+      ser.forEach((s) => {
+        svg.append("path").datum(s.pts).attr("fill", "none").attr("stroke", s.col).attr("stroke-width", s.c === "NOR" ? 3 : 2).attr("d", d3.line().x((p) => x(p[0])).y((p) => y(p[1])));
+        const lp = s.pts[s.pts.length - 1];
+        labs.push({ s, x: x(lp[0]) + 6, y: y(lp[1]) + 4 });
+      });
+      labs.sort((a, b) => a.y - b.y);
+      for (let k = 1; k < labs.length; k++) if (labs[k].y - labs[k - 1].y < 13) labs[k].y = labs[k - 1].y + 13;
+      labs.forEach((l) => svg.append("text").attr("x", l.x).attr("y", l.y).attr("fill", "var(--text-2)").attr("font-size", 11.5).attr("font-weight", l.s.c === "NOR" ? 700 : 500).text(l.s.n));
+    }
+    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi(); });
   })();
   </script>
 </body>

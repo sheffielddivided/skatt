@@ -18,6 +18,8 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `handel.html` | **Handelen med verden** – eksport og import av varer per land 1988–i dag, med og uten olje og gass, varegrupper per land, og hvem som er avhengig av hvem: Norge eller EU | SSB, Eurostat |
 | `elbil.html` | **Elbiler i verden** – elbilenes andel av nybilsalg og bilpark i over 60 land 2010–i dag, elbil mot ladbar hybrid i Europa, Norge måned for måned og incentiver | IEA (via Our World in Data), Eurostat, SSB |
 | `bolig.html` | **Boligpriser i verden** – reelle og nominelle boligpriser, husleie, pris mot inntekt og pris mot husleie i ca. 50 land fra 1970, avstand fra toppen, og boligpriser i norske regioner | OECD, SSB |
+| `inflasjon.html` | **Inflasjon i verden** – inflasjon i 190 land 1960–i dag med kart og rangering, sammenheng med pengemengde, styringsrente, utlånsrente, statsbudsjettets balanse, statsgjeld, valutakurs, BNP-vekst, ledighet, driftsbalanse og oljepris (mellom land og innen land, med signifikanstest og tidsforskyvning), inflasjonsbølgen 2021–2024 måned for måned, effekten av inflasjonsmål, diskusjon om hvorfor vi har et positivt inflasjonsmål og om inflasjon er en skjult skatt (Friedman, Keynes og motargumenter) med kalkulator for skatt på nominell avkastning, og hundre år med norsk inflasjon | Verdensbanken (WDI), BIS, FRED/IMF |
+| `vind.html` | **Vindkraft i Europa** – installert kapasitet og produksjon i 39 land 1990–i dag, absolutt, per innbygger, per areal og som andel av all kapasitet, produksjon og forbruk, kapasitetsfaktor, land- og havvind, sesongvariasjon måned for måned, støtteordninger og beregnet støtte per MWh (CEER), havvindauksjoner, og alle norske vindkraftverk (NVE) | Ember, Eurostat, CEER, NVE, SSB 08307 |
 | `brann.html` | **Boligbranner i kommunene** – boligbranner per innbygger 2015–i dag sammenholdt med boligpris, flytting, befolkningsendring, alder og piper. Samme motor som `profil.html` | SSB (KOSTRA, 06035, 06913) |
 | `sykefravaer.html` | **Sykefraværet i kommunene** – legemeldt sykefravær 2015–i dag per kommune, etter kjønn og alder, justert for alder og kjønn, og sammenheng med uføretrygd, utdanning og inntekt | FHI (grunnlag fra SSB) |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
@@ -52,6 +54,8 @@ python3 scripts/build_rettsstat.py    # Rettsstaten i verden (World Justice Proj
 python3 scripts/build_handel.py       # Handelen med verden (SSB + Eurostat)
 python3 scripts/build_elbil.py        # Elbiler i verden (IEA via OWID, Eurostat, SSB)
 python3 scripts/build_bolig.py        # Boligpriser i verden (OECD, SSB)
+python3 scripts/build_inflasjon.py    # Inflasjon i verden (Verdensbanken, BIS, FRED/IMF)
+python3 scripts/build_vind.py         # Vindkraft i Europa (Ember, Eurostat, Verdensbanken, NVE, SSB)
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.
@@ -63,6 +67,8 @@ GitHub Actions-arbeidsflyten `.github/workflows/oppdater-data.yml` kjører skrip
 * Alle år er harmonisert til dagens kommuneinndeling (357 kommuner, 15 fylker) ved hjelp av SSBs endringskatalog (Klass 131).
   Sammenslåinger summeres; ved delinger fordeles tallene etter folketall.
 * Fylker = sum av kommunene. Kontinentalsokkelen, Svalbard og kildeskatt vises separat.
+
+Støtteordningene for vindkraft `data/vind-stotte.json` er satt sammen for hånd fra CEERs «Status Review of Renewable Support Schemes in Europe for 2022 and 2023» (2025) og offentlige auksjonsresultater, og oppdateres ikke automatisk.
 
 Våpentallene `data/vapen-sas-2017.json` er hentet fra Small Arms Survey, «Civilian Firearms Holdings, 2017» (vedlegg til briefing paper, 2018).
 
