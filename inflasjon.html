@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inflasjon i verden · Norge ASA</title>
+  <meta name="description" content="Inflasjonen i nesten alle land fra 1960 til i dag, og sammenhengen med rentenivå, pengemengde, statsbudsjettets balanse, valutakurs, økonomisk vekst, arbeidsledighet og oljepris.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .controls .select { min-width: 150px; }
+    .controls #sx { width: 300px; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card, .grid2 > .card { margin-top: 0; }
+    .kgrid > *, .grid2 > * { min-width: 0; }
+    .wmap svg { overflow: hidden; }
+    .wmap path.c { stroke: var(--surface); stroke-width: .4; cursor: pointer; }
+    .wmap path.na { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.sel { fill: none; stroke: var(--text); stroke-width: 1.8; pointer-events: none; }
+    .wmap .lg text { fill: var(--text-2); font-size: 11.5px; }
+    .rank { max-height: 470px; overflow: auto; }
+    .rank .r { display: grid; grid-template-columns: 30px minmax(0, 1fr) 110px 64px; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .rank .r:hover { background: var(--surface-2); }
+    .rank .r.no { background: color-mix(in srgb, var(--series-2) 14%, transparent); font-weight: 650; }
+    .rank .r.agg { color: var(--text-2); font-style: italic; }
+    .rank .r.pick { background: var(--surface-2); font-weight: 600; }
+    .rank .r .i { color: var(--text-3); font-size: 11.5px; }
+    .rank .r .bw { position: relative; height: 8px; }
+    .rank .r .bw .z { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--border-strong); }
+    .rank .r .b { position: absolute; top: 0; height: 8px; border-radius: 3px; background: var(--neutral-mark); }
+    .rank .r.nord .b { background: var(--series-1); }
+    .rank .r.no .b { background: var(--series-2); }
+    .rank .r .v { text-align: right; font-variant-numeric: tabular-nums; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+    .chip .sw { width: 10px; height: 10px; border-radius: 3px; }
+    .chip button { border: 0; background: none; cursor: pointer; color: var(--text-3); width: 20px; height: 20px; border-radius: 50%; }
+    .chip button:hover { background: var(--surface-2); color: var(--text); }
+    .note { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; max-width: 95ch; }
+    .note b { color: var(--text-2); }
+    .stat-line { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--text-2); margin: 4px 0 6px; }
+    .stat-line b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .chart svg text.sm { font-size: 11px; fill: var(--text-3); }
+    .row-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--text-2); margin-bottom: 6px; }
+    .row-legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+    .row-legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+    @media (max-width: 1100px) { .kgrid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .controls .field, .controls .select, .controls #sx { width: 100%; } .rank .r { grid-template-columns: 26px minmax(0, 1fr) 80px 58px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 21</span>
+        <h1 class="display">Inflasjon i verden</h1>
+        <p class="muted">Hvorfor stiger prisene raskere i noen land enn i andre? Her er prisveksten i nesten alle land fra 1960 til i dag. Vi ser på sammenhengen med rentenivå, pengemengde, statsbudsjettets balanse, valutakurs og andre forhold, og på hva som skjedde da prisene skjøt fart i 2021–2023.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="card panel">
+      <div class="controls">
+        <div class="field"><label for="year">År</label><select id="year" class="select"></select></div>
+      </div>
+      <p class="note">Inflasjon er den årlige veksten i konsumprisindeksen (KPI), som snitt for året mot snittet året før.</p>
+    </section>
+    <section class="kgrid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div><h2 id="m-title"></h2><p id="m-sub"></p></div>
+          <div class="seg" role="group" aria-label="Kartutsnitt" id="zoom">
+            <button data-v="verden" aria-pressed="true">Verden</button>
+            <button data-v="europa" aria-pressed="false">Europa</button>
+          </div>
+        </div>
+        <div class="chart wmap" id="map"></div>
+      </div>
+      <div class="card panel"><div class="panel-head"><div><h2>Rangering</h2><p id="r-sub"></p></div></div><div class="rank" id="rank"></div></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Inflasjonen over tid</h2><p id="t-sub"></p></div>
+        <div class="controls">
+          <div class="field"><span class="label" id="tsc-label">Skala</span>
+            <div class="seg" role="group" aria-labelledby="tsc-label" id="tscale">
+              <button data-v="lin" aria-pressed="true">Vanlig</button>
+              <button data-v="log" aria-pressed="false">Komprimert</button>
+            </div>
+          </div>
+          <div class="field"><label for="tfrom">Fra</label><select id="tfrom" class="select"></select></div>
+        </div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div style="display:flex;gap:8px;margin:10px 0 6px"><input class="input" id="addc" type="search" list="clist" placeholder="Legg til land …" autocomplete="off" style="width:240px"><datalist id="clist"></datalist></div>
+      <div class="chart" id="ts"></div>
+    </section>
+
+    <h2 class="display section-title">Hva henger sammen med inflasjonen?</h2>
+    <p class="section-lead">Økonomisk teori peker på flere drivere: For mye penger i omløp, store underskudd i statsbudsjettet som finansieres med sedelpressen, en valuta som svekkes slik at importen blir dyrere, og en økonomi som går for fort. Renten er sentralbankens viktigste verktøy mot inflasjonen, men den følger også selv inflasjonen. Her tester vi sammenhengene på to måter: <b>mellom land</b> (har land med mye av noe også høy inflasjon over tid?) og <b>innen hvert land</b> (er inflasjonen høyere de årene landet har mer av noe enn vanlig for landet?).</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Sammenhenger med inflasjonen</h2><p id="c-sub"></p></div>
+        <div class="controls">
+          <div class="field"><label for="pfrom">Periode fra</label><select id="pfrom" class="select"></select></div>
+          <div class="field"><label for="pto">til</label><select id="pto" class="select"></select></div>
+          <div class="field"><span class="label" id="cm-label">Sammenligning</span>
+            <div class="seg" role="group" aria-labelledby="cm-label" id="cmode">
+              <button data-v="between" aria-pressed="true">Mellom land</button>
+              <button data-v="within" aria-pressed="false">Innen land</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chart" id="corr"></div>
+      <p class="note" id="c-note"></p>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="sc-title"></h2><p id="sc-sub"></p></div>
+        <div class="controls">
+          <div class="field"><label for="sx">Sammenlign inflasjon med</label><select id="sx" class="select"></select></div>
+          <div class="field"><span class="label" id="sm-label">Punkter</span>
+            <div class="seg" role="group" aria-labelledby="sm-label" id="smode">
+              <button data-v="avg" aria-pressed="true">Snitt per land</button>
+              <button data-v="all" aria-pressed="false">Alle landår</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-line" id="sc-stats"></div>
+      <div class="chart" id="scatter"></div>
+      <p class="note" id="sc-note"></p>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head"><div><h2>Hvem kommer først?</h2><p id="lag-sub"></p></div></div>
+      <div class="chart" id="lag"></div>
+      <p class="note" id="lag-note"></p>
+    </section>
+
+    <h2 class="display section-title">Land for land</h2>
+    <p class="section-lead">Velg et land og en faktor for å se hvordan de har fulgt hverandre over tid. Korrelasjonen til høyre viser om faktoren pleier å komme før eller etter inflasjonen i dette landet.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="cc-title"></h2><p id="cc-sub"></p></div>
+        <div class="controls">
+          <div class="field"><label for="cc">Land</label><select id="cc" class="select"></select></div>
+          <div class="field"><label for="cf">Faktor</label><select id="cf" class="select"></select></div>
+        </div>
+      </div>
+      <div class="kgrid" style="margin-top:0">
+        <div><div class="row-legend" id="cc-legend"></div><div class="chart" id="cts"></div></div>
+        <div><div class="chart" id="clag"></div><p class="note" id="clag-note"></p></div>
+      </div>
+    </section>
+
+    <h2 class="display section-title">Inflasjonsbølgen og rentene</h2>
+    <p class="section-lead">Etter pandemien og Russlands invasjon av Ukraina steg prisene raskt i nesten hele verden. Sentralbankene svarte med de største renteøkningene på flere tiår. Månedstall fra BIS viser hvor høyt inflasjonen nådde, hvor mye renten ble satt opp, og om inflasjonen nå er tilbake nær målet.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="mo-title"></h2><p id="mo-sub"></p></div>
+        <div class="controls">
+          <div class="field"><label for="mc">Land</label><select id="mc" class="select"></select></div>
+          <div class="field"><label for="mfrom">Fra</label><select id="mfrom" class="select"></select></div>
+        </div>
+      </div>
+      <div class="row-legend"><span><i style="background:var(--series-2)"></i>Inflasjon siste 12 måneder</span><span><i style="background:var(--series-1)"></i>Styringsrente</span><span><i style="background:var(--series-1);opacity:.25;height:10px"></i>Realrente (rente minus inflasjon)</span></div>
+      <div class="chart" id="mts"></div>
+    </section>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Toppen i inflasjonen og renteøkningen</h2><p id="wv-sub"></p></div></div>
+        <div class="stat-line" id="wv-stats"></div>
+        <div class="chart" id="wave"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Bølgen land for land</h2><p id="wt-sub"></p></div></div>
+        <div id="wtable" style="max-height:470px;overflow:auto"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Virker inflasjonsmål?</h2>
+    <p class="section-lead">Siden 1990 har over 40 land gitt sentralbanken et tallfestet mål for inflasjonen. Norge fikk inflasjonsmål i 2001. Diagrammet sammenligner inflasjonen de ti årene før og de ti årene etter at målet ble innført, og trekker fra det som skjedde med inflasjonen i resten av verden i de samme årene.</p>
+    <section class="card panel">
+      <div class="panel-head"><div><h2>Inflasjon før og etter inflasjonsmål</h2><p id="it-sub"></p></div></div>
+      <div class="row-legend"><span><i class="dot" style="background:var(--series-5)"></i>Ti år før (median)</span><span><i class="dot" style="background:var(--series-1)"></i>Ti år etter (median)</span></div>
+      <div class="chart" id="it"></div>
+      <p class="note" id="it-note"></p>
+    </section>
+
+    <h2 class="display section-title">Hundre år med norsk inflasjon</h2>
+    <p class="section-lead">Prisveksten i Norge måned for måned, med Norges Banks styringsrente fra 1985. Kurven forteller om etterkrigsinflasjon og pengepolitikk: Deflasjonen på 1920-tallet, krigen, de høye prisstigningstallene på 1970- og 80-tallet, inflasjonsmålet fra 2001 og prishoppet i 2022.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Inflasjon og styringsrente i Norge</h2><p id="no-sub"></p></div>
+        <div class="seg" role="group" aria-label="Periode" id="noper">
+          <button data-v="1920" aria-pressed="true">Alt</button>
+          <button data-v="1970" aria-pressed="false">Fra 1970</button>
+          <button data-v="2000" aria-pressed="false">Fra 2000</button>
+        </div>
+      </div>
+      <div class="chart" id="nots"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle land</h2><p id="tbl-sub"></p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Penger, budsjett og valuta</h3><p>Kvantitetsteorien sier at varig høy inflasjon skyldes at pengemengden vokser raskere enn produksjonen. Det stemmer godt over lange perioder og mellom land, særlig når inflasjonen er høy. Store underskudd i statsbudsjettet gir inflasjon når de finansieres av sentralbanken. En svakere valuta gjør importvarer dyrere, men en valuta svekkes også ofte <i>fordi</i> inflasjonen er høy.</p></div>
+      <div><h3>Renten følger inflasjonen</h3><p>Høy rente skal dempe inflasjonen, men i tallene ser det ofte motsatt ut: Land med høy inflasjon har høye renter. Det skyldes at långivere krever kompensasjon for prisstigningen (Fisher-effekten) og at sentralbanken setter opp renten <i>når</i> inflasjonen stiger. Virkningen av renten kommer med ett til to års forsinkelse og er vanskelig å se i enkle korrelasjoner.</p></div>
+      <div><h3>Kilder og metode</h3><p>Verdensbanken, <a href="https://data.worldbank.org/">World Development Indicators</a> (inflasjon, pengemengde, renter, valutakurs, statsbudsjett for sentralforvaltningen, statsgjeld, BNP-vekst, ledighet, driftsbalanse, handel). <a href="https://data.bis.org/">BIS</a> (styringsrenter og månedlig KPI-vekst). Oljepris: FRED/IMF. Inflasjonsmål: Hammond (2012) og IMF. Korrelasjonene bruker rangkorrelasjon (Spearman) og en komprimert skala for å hindre at noen få land med hyperinflasjon styrer resultatet. Sammenheng er ikke det samme som årsak.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: Verdensbanken, BIS, FRED/IMF · Kart: © EuroGeographics (Eurostat GISCO)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/inflasjon.js"></script>
+</body>
+</html>
