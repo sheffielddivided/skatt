@@ -2,10 +2,7 @@
 (async function () {
   const S = window.Skatt;
   const tip = S.tooltip();
-  const [d, topo] = await Promise.all([
-    fetch("data/sokkel.json").then((r) => r.json()),
-    fetch("data/verden.topo.json").then((r) => r.json()),
-  ]);
+  const d = await fetch("data/sokkel.json").then((r) => r.json());
 
   // ---------------------------------------------------------------- data
   const FAT = 6.2898; // fat per Sm³
@@ -54,7 +51,8 @@
   const avgPer = (y) => tot("oe", y) / prodCount(y);
   const oilPk = peakY("oil"), gasPk = peakY("gas");
   const PROD = [["oil", "Olje"], ["gas", "Gass"], ["ngl", "NGL"], ["cond", "Kondensat"]];
-  const PCOL = { oil: "var(--series-1)", gas: "var(--series-2)", ngl: "var(--series-3)", cond: "var(--series-4)" };
+  // Olje oransje og gass blå, som i 3D-kartet.
+  const PCOL = { oil: "var(--series-2)", gas: "var(--series-1)", ngl: "var(--series-3)", cond: "var(--series-4)" };
   const sumK = (k) => d3.sum(years, (y) => tot(k, y));
   const b = (s) => `<b>${s}</b>`;
   const ifF = (f, s) => (f ? s : "");
@@ -217,100 +215,6 @@
   }, { rootMargin: window.matchMedia("(max-width: 1000px)").matches ? "-72% 0px -8% 0px" : "-45% 0px -45% 0px" });
   document.querySelectorAll(".step").forEach((el) => io.observe(el));
 
-  // ---------------------------------------------------------------- kartet
-  const land = topojson.feature(topo, topo.objects.land);
-  const yrInput = document.getElementById("year");
-  const mapYears = allYears;
-  yrInput.min = mapYears[0]; yrInput.max = mapYears[mapYears.length - 1]; yrInput.value = yrInput.max;
-  let mapYear = +yrInput.value, map = null;
-  const located = F.filter((f) => f.lon != null && f.lat != null);
-  const yLabel = (yy) => (P && yy === P.year ? `${yy}<small style="font-size:12px;color:var(--text-3)"> jan–${S.MONTHS_SHORT[P.months - 1]}</small>` : String(yy));
-
-  function drawMap() {
-    const el = document.getElementById("map");
-    el.innerHTML = "";
-    const w = el.clientWidth || 700, h = Math.round(Math.min(w * 1.25, Math.max(420, window.innerHeight * 0.8)));
-    const box = { type: "MultiPoint", coordinates: [[0.5, 55.6], [26, 72.6], [0.5, 72.6], [26, 55.6]] };
-    const proj = d3.geoConicConformal().parallels([58, 70]).rotate([-12, 0]).fitExtent([[12, 12], [w - 12, h - 12]], box);
-    const path = d3.geoPath(proj);
-    const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("role", "img").attr("aria-label", "Kart over felt på norsk sokkel");
-    svg.append("clipPath").attr("id", "map-clip").append("rect").attr("width", w).attr("height", h).attr("rx", 9);
-    const g = svg.append("g").attr("clip-path", "url(#map-clip)");
-    g.append("path").datum(land).attr("class", "land").attr("d", path);
-    [["Nordsjøen", 4.6, 57.3], ["Norskehavet", 2.5, 67.6], ["Barentshavet", 17, 72.9]].forEach(([n, lo, la]) => {
-      const [px, py] = proj([lo, la]);
-      if (px > 0 && px < w && py > 12 && py < h) g.append("text").attr("class", "sealabel").attr("x", px).attr("y", py).text(n);
-    });
-    const r = d3.scaleSqrt([0, d3.max(located, (f) => f.cum)], [0, Math.max(12, Math.min(w, h) / 22)]);
-    const dots = g.append("g").selectAll("circle").data(located).join("circle").attr("class", "fld")
-      .attr("cx", (f) => proj([f.lon, f.lat])[0]).attr("cy", (f) => proj([f.lon, f.lat])[1]).attr("r", 0);
-    const lab = g.append("g");
-    dots.on("pointermove", (ev, f) => {
-      const i = iy(mapYear);
-      tip.show(`<div class="tt-title">${S.escapeHtml(f.name)}</div>
-        <div class="tt-row"><span>${f.area}</span><span>${f.status}</span></div>
-        <div class="tt-row"><span>Funnet / startet</span><b>${f.disc || "–"} / ${f.start}</b></div>
-        <div class="tt-row"><span>Produksjon ${mapYear}</span><b>${fm1(f.at(mapYear))}</b></div>
-        <div class="tt-row"><span>Produsert t.o.m. ${mapYear}</span><b>${fm(f.cumTo[i])}</b></div>
-        <div class="tt-row"><span>Gjenstående (anslag)</span><b>${f.rem != null ? fm(f.rem) : "–"}</b></div>
-        <div class="tt-row"><span></span><span>mill. Sm³ o.e.</span></div>`, ev.clientX, ev.clientY);
-    }).on("pointerleave", () => tip.hide());
-    map = { dots, lab, r, proj };
-    updateMap(false);
-  }
-
-  function updateMap(animate = true) {
-    if (!map) return;
-    const i = iy(mapYear);
-    document.getElementById("map-year").innerHTML = yLabel(mapYear);
-    map.dots.sort((a, c) => c.cumTo[i] - a.cumTo[i])
-      .attr("fill", (f) => (f.at(mapYear) > 0 ? "var(--series-1)" : "none"))
-      .attr("fill-opacity", 0.6)
-      .attr("stroke", (f) => (f.at(mapYear) > 0 ? "var(--surface)" : "var(--text-3)"))
-      .attr("stroke-width", (f) => (f.at(mapYear) > 0 ? 1.5 : 1))
-      .style("display", (f) => (f.cumTo[i] > 0 ? null : "none"))
-      .transition().duration(animate ? 300 : 0).attr("r", (f) => (f.cumTo[i] > 0 ? Math.max(2.5, map.r(f.cumTo[i])) : 0));
-    map.lab.selectAll("*").remove();
-    // Navn på de største feltene, men bare der navnet ikke kolliderer med et annet.
-    const boxes = [];
-    located.filter((f) => f.cumTo[i] > 0).sort((a, c) => c.cumTo[i] - a.cumTo[i]).slice(0, 10).forEach((f) => {
-      const [px, py] = map.proj([f.lon, f.lat]), rr = map.r(f.cumTo[i]);
-      if (rr < 6) return;
-      const bw = f.name.length * 6.6, b = [px + rr + 3, py - 8, px + rr + 3 + bw, py + 6];
-      if (boxes.some((o) => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1])) return;
-      boxes.push(b);
-      map.lab.append("text").attr("class", "mlabel").attr("x", b[0]).attr("y", py + 4).text(f.name);
-    });
-    const prod = F.filter((f) => f.at(mapYear) > 0).sort((a, c) => c.at(mapYear) - a.at(mapYear));
-    const yt = tot("oe", mapYear), part = P && mapYear === P.year;
-    document.getElementById("map-side").innerHTML = `
-      <div class="stat"><div class="l">Felt i produksjon</div><div class="v">${prod.length}</div><div class="s">${F.filter((f) => f.cumTo[i] > 0).length - prod.length} felt er stengt ned</div></div>
-      <div class="stat"><div class="l">Produksjon ${part ? "hittil i år" : "i året"}</div><div class="v">${fm(yt)}</div><div class="s">mill. Sm³ o.e.${part ? `, januar–${S.MONTHS[P.months - 1]}` : ""}</div></div>
-      <div class="stat"><div class="l">Produsert til og med ${mapYear}</div><div class="v">${mrd(d3.sum(F, (f) => f.cumTo[i]))}</div><div class="s">mrd. Sm³ o.e.</div></div>
-      <div class="stat"><div class="l">Største felt i ${mapYear}</div><ol>${prod.slice(0, 5).map((f) => `<li><b>${S.escapeHtml(f.name)}</b> ${fm1(f.at(mapYear))} (${fm(100 * f.at(mapYear) / yt)} %)</li>`).join("")}</ol></div>`;
-  }
-  yrInput.addEventListener("input", () => { stop(); mapYear = +yrInput.value; updateMap(); });
-  let timer = null;
-  const playBtn = document.getElementById("play");
-  function setPlayUi(on) {
-    playBtn.querySelector("span").textContent = on ? "Pause" : "Spill av";
-    playBtn.setAttribute("aria-label", on ? "Pause" : "Spill av");
-    playBtn.querySelector("svg").innerHTML = on ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>' : '<path d="M7 5v14l12-7z"/>';
-  }
-  function stop() { if (timer) { clearInterval(timer); timer = null; setPlayUi(false); } }
-  playBtn.addEventListener("click", () => {
-    if (timer) return stop();
-    if (mapYear >= +yrInput.max) mapYear = +yrInput.min;
-    setPlayUi(true);
-    const tick = () => {
-      yrInput.value = mapYear; updateMap();
-      if (mapYear >= +yrInput.max) return stop();
-      mapYear++;
-    };
-    tick();
-    timer = setInterval(tick, 380);
-  });
-
   // ---------------------------------------------------------------- hvor mye er igjen
   function drawBars() {
     const el = document.getElementById("bars");
@@ -397,7 +301,7 @@
   document.getElementById("updated").textContent = "Data hentet fra Sokkeldirektoratet " + new Date(d.updated).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" });
 
   function all() {
-    drawStory(); drawMap(); drawBars();
+    drawStory(); drawBars();
     drawSmall("c-count", prodCount, ["Felt i produksjon", fm], "bar");
     drawSmall("c-avg", avgPer, ["Snitt per felt, mill. Sm³ o.e.", fm1], "line");
   }

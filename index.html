@@ -747,9 +747,9 @@
       const st = d3.stack().keys(keys)(rows);
       const x = d3.scaleLinear(d3.extent(Y), [m.l, w - m.r]), y = d3.scaleLinear([0, d3.max(rows, (r) => d3.sum(keys, (k) => r[k]))], [h - m.b, m.t]);
       const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
-      const col = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)"];
+      const col = ["var(--series-2)", "var(--series-1)", "var(--series-3)", "var(--series-4)"];
       svg.selectAll("path").data(st).join("path").attr("fill", (s, i) => col[i]).attr("d", d3.area().x((p) => x(p.data.y)).y0((p) => y(p[0])).y1((p) => y(p[1])).curve(d3.curveMonotoneX));
-      svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text(`Olje (blått) og gass (oransje) fra norsk sokkel, ${Y[0]}–${last}`);
+      svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text(`Olje (oransje) og gass (blått) fra norsk sokkel, ${Y[0]}–${last}`);
     }
     drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi(); drawSokkel();
     S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi(); drawSokkel(); });

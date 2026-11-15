@@ -112,7 +112,9 @@ def main():
         rec, rem = res.get(fid, (None, None))
         fields.append({"id": fid, **m, "start": years[nz[0]], "end": years[nz[-1]],
                        "rec": rec, "rem": rem, "y0": years[nz[0]],
-                       "oe": [round(v, 3) for v in oe[nz[0]: nz[-1] + 1]]})
+                       "oe": [round(v, 3) for v in oe[nz[0]: nz[-1] + 1]],
+                       # gass i mrd. Sm³ = mill. Sm³ o.e.; resten av oe er væske (olje, NGL, kondensat)
+                       "gas": [round(s.get(y, [0] * 5)[1], 3) for y in years[nz[0]: nz[-1] + 1]]})
     fields.sort(key=lambda f: -sum(f["oe"]))
 
     out = {

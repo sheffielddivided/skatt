@@ -38,22 +38,45 @@
     .sec-intro { max-width: 70ch; margin: 64px 0 0; }
     .sec-intro h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(26px, 3vw, 34px); }
     .sec-intro p { color: var(--text-2); margin: 8px 0 0; }
-    .mapwrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr); gap: 24px; align-items: start; }
-    .player { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-    .player input[type=range] { flex: 1; accent-color: var(--accent); }
-    .player .yr { font-family: var(--font-display); font-size: 28px; min-width: 64px; text-align: right; }
-    #map svg { background: var(--sea); border-radius: var(--radius-sm); }
-    #map .land { fill: var(--map-empty); stroke: var(--border-strong); stroke-width: .6; }
-    #map .fld { stroke: var(--surface); stroke-width: 1.5; cursor: pointer; transition: r .35s; }
-    #map .mlabel { fill: var(--text); font-size: 11.5px; font-weight: 600; paint-order: stroke; stroke: var(--sea); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
-    #map .sealabel { fill: var(--text-3); font-size: 12px; font-style: italic; letter-spacing: .06em; }
-    .mapside .stat { padding: 14px 0; border-bottom: 1px solid var(--border); }
-    .mapside .stat:last-child { border-bottom: 0; }
-    .mapside .l { font-size: 13px; color: var(--text-2); }
-    .mapside .v { font-size: 26px; font-weight: 650; letter-spacing: -.02em; margin-top: 2px; }
-    .mapside .s { font-size: 12.5px; color: var(--text-3); }
-    .mapside ol { margin: 6px 0 0; padding-left: 20px; font-size: 13.5px; color: var(--text-2); }
-    .mapside ol b { color: var(--text); font-weight: 600; }
+    .r3 { padding: 18px; }
+    .r3-view { position: relative; border-radius: var(--radius-sm); overflow: hidden; background: var(--sea); touch-action: pan-y; }
+    .r3-view canvas { display: block; width: 100%; cursor: grab; }
+    .r3-view canvas:active { cursor: grabbing; }
+    .r3-head { position: absolute; left: 0; top: 0; padding: 12px 16px 10px; background: color-mix(in srgb, var(--surface) 82%, transparent); border-bottom-right-radius: 10px; pointer-events: none; }
+    .r3-year { font-family: var(--font-display); font-size: clamp(30px, 4vw, 44px); line-height: 1; letter-spacing: -.02em; }
+    .r3-sub { font-size: 13px; color: var(--text-2); margin-top: 6px; }
+    .r3-sub .k { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin: 0 4px 0 8px; }
+    .r3-sub .k:first-of-type { margin-left: 0; }
+    .r3-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .r3-lab { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; }
+    .r3-lab .box { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; font-size: 12.5px; color: var(--text-2); white-space: nowrap; box-shadow: var(--shadow); line-height: 1.35; }
+    .r3-lab .box b { display: block; color: var(--text); font-weight: 650; }
+    .r3-lab .stem { width: 1px; background: var(--text-2); }
+    .r3-lab .stem::after { content: ""; display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--text); margin: 0 0 0 -2px; position: relative; top: 100%; transform: translateY(-3px); }
+    .r3-lab.side { transform: none; }
+    .r3-hstem { position: absolute; height: 1px; background: var(--text-2); }
+    @media (max-width: 640px) { .r3-head { padding: 8px 10px; } .r3-year { font-size: 26px; } .r3-sub { font-size: 11.5px; margin-top: 3px; } .r3-lab .box { font-size: 11.5px; padding: 3px 7px; } }
+    .r3-place { position: absolute; transform: translate(-50%, -50%); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; }
+    .r3-place.land { letter-spacing: .02em; text-transform: none; font-size: 12.5px; color: var(--text-2); }
+    .r3-tools { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 6px; }
+    .r3-tools .btn { padding: 6px 10px; min-width: 34px; justify-content: center; }
+    .r3-tools svg { width: 14px; height: 14px; transition: transform .2s; }
+    .r3-hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: color-mix(in srgb, var(--text) 75%, transparent); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    .r3-hint.show { opacity: 1; }
+    .r3-bar { display: flex; align-items: center; gap: 12px; margin: 12px 0 8px; flex-wrap: wrap; }
+    .r3-bar input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
+    .r3-bar #r3-play svg { width: 16px; height: 16px; }
+    .r3-legend { margin: 4px 0 0; }
+    .r3-step { margin-top: 16px; padding: 4px 0 4px 16px; border-left: 3px solid var(--accent); min-height: 96px; }
+    .r3-step h3 { font-size: 16px; font-weight: 650; margin: 0 0 4px; }
+    .r3-step p { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.6; max-width: 90ch; }
+    .r3-step p b { color: var(--text); font-weight: 600; }
+    .r3-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .r3-nav .btn:disabled { opacity: .4; cursor: default; }
+    .r3-dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .r3-dots button { width: 9px; height: 9px; border-radius: 5px; border: 0; padding: 0; background: var(--border-strong); cursor: pointer; transition: width .2s, background .2s; }
+    .r3-dots button[aria-current="step"] { width: 22px; background: var(--accent); }
+    .r3-fallback { padding: 40px 20px; text-align: center; color: var(--text-2); }
     #bars .blabel { fill: var(--text-2); font-size: 12px; }
     #bars .bval { fill: var(--text-3); font-size: 11.5px; }
     @media (max-width: 1000px) {
@@ -63,11 +86,11 @@
       .scrolly .step { min-height: 80vh; align-items: flex-end; }
       .scrolly .step .card { opacity: 1; box-shadow: var(--shadow); }
       .stage-head .now { font-size: 26px; }
-      .mapwrap { grid-template-columns: 1fr; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
   <script src="assets/common.js"></script>
 </head>
 <body>
@@ -112,20 +135,31 @@
 
     <div class="sec-intro">
       <h2>Felt for felt</h2>
-      <p>Hvert felt er en sirkel der det ligger, og størrelsen viser hvor mye feltet har produsert til og med året du velger. Fylte sirkler produserte det året, åpne sirkler er stengt ned. Trykk på avspilling og se sokkelen fylle seg opp fra Ekofisk i sør til Barentshavet i nord.</p>
+      <p>Grafen over legger sammen hele sokkelen. Kartet under deler den opp. Hvert felt er en topp der feltet ligger, og høyden er det feltet produserte det året. Ligger feltene tett, vokser toppene sammen til rygger. Oransje er olje og andre væsker, blått er gass, og fargene blandes der et felt gir begge. Bruk Neste og Tilbake for å fly gjennom historien. Dra i kartet for å flytte det, og dra med høyre museknapp eller med Shift for å snu og vippe det. På mobil drar du med én eller to fingre.</p>
     </div>
-    <section class="card panel">
-      <div class="mapwrap">
-        <div>
-          <div class="player">
-            <button class="btn" id="play" aria-label="Spill av"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg><span>Spill av</span></button>
-            <input type="range" id="year" aria-label="År">
-            <span class="yr" id="map-year"></span>
-          </div>
-          <div class="legend" style="margin-bottom:8px"><span class="item"><span class="sw" style="background:var(--series-1);opacity:.6;border-radius:50%"></span>I produksjon i året</span><span class="item"><span class="sw" style="border:1px solid var(--text-3);border-radius:50%"></span>Stengt ned</span><span class="item" style="color:var(--text-3)">Størrelse = produsert til og med året</span></div>
-          <div class="chart" id="map"></div>
+    <section class="card panel r3" id="r3">
+      <div class="r3-view" id="r3-view">
+        <div class="r3-head" aria-live="polite"><div class="r3-year" id="r3-year"></div><div class="r3-sub" id="r3-sub"></div></div>
+        <div class="r3-labels" id="r3-labels" aria-hidden="true"></div>
+        <div class="r3-tools">
+          <button class="btn" id="r3-north" title="Snu kartet mot nord" aria-label="Snu kartet mot nord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 6 20l6-4 6 4z"/></svg></button>
+          <button class="btn" id="r3-in" aria-label="Zoom inn">+</button>
+          <button class="btn" id="r3-out" aria-label="Zoom ut">−</button>
+          <button class="btn" id="r3-reset">Tilbakestill</button>
         </div>
-        <div class="mapside" id="map-side" aria-live="polite"></div>
+        <div class="r3-hint" id="r3-hint">Hold Ctrl (⌘ på Mac) og rull for å zoome</div>
+      </div>
+      <div class="r3-bar">
+        <button class="btn" id="r3-play" aria-label="Spill av"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></button>
+        <input type="range" id="r3-range" aria-label="År" step="1">
+        <div class="seg" role="group" aria-label="Høyden viser" id="r3-mode"><button data-v="year" aria-pressed="true">Hvert år</button><button data-v="cum" aria-pressed="false">Til sammen</button></div>
+      </div>
+      <div class="legend r3-legend"><span class="item"><span class="sw" style="background:var(--series-2)"></span>Olje, NGL og kondensat</span><span class="item"><span class="sw" style="background:var(--series-1)"></span>Gass (fargene blandes der et felt gir begge)</span><span class="item" style="color:var(--text-3)" id="r3-note">Høyde: feltets produksjon i året som vises</span></div>
+      <div class="r3-step" id="r3-step" aria-live="polite"></div>
+      <div class="r3-nav">
+        <button class="btn" id="r3-back">← Tilbake</button>
+        <div class="r3-dots" id="r3-dots"></div>
+        <button class="btn primary" id="r3-next">Neste →</button>
       </div>
     </section>
 
@@ -159,7 +193,7 @@
 
     <section class="story">
       <div><h3>Oljeekvivalenter</h3><p>For å kunne legge sammen olje, gass, NGL og kondensat regnes alt om til oljeekvivalenter (o.e.). 1 000 Sm³ gass regnes som 1 Sm³ o.e. En standard kubikkmeter (Sm³) er omtrent 6,29 fat.</p></div>
-      <div><h3>Hva er med?</h3><p>Salgbar (netto) produksjon fra alle felt med produksjon, slik Sokkeldirektoratet rapporterer den. Prøveproduksjon fra funn som ikke er utbygd, er ikke med. Inneværende år er ufullstendig og er tatt med bare i kartet og tabellen.</p></div>
+      <div><h3>Hva er med?</h3><p>Salgbar (netto) produksjon fra alle felt med produksjon, slik Sokkeldirektoratet rapporterer den. Prøveproduksjon fra funn som ikke er utbygd, er ikke med. Inneværende år er ufullstendig og er tatt med bare i tabellen.</p></div>
       <div><h3>Kilder</h3><p>Sokkeldirektoratet (Sodir), FactPages og FactMaps: produksjon per felt (lag 7300), feltfakta (7100) og reserver per felt (7113). Data under Norsk lisens for offentlige data (NLOD 2.0). Kart: Eurostat GISCO.</p></div>
     </section>
   </main>
@@ -171,5 +205,6 @@
     </div>
   </footer>
   <script src="assets/sokkel.js"></script>
+  <script type="module" src="assets/sokkel3d.js"></script>
 </body>
 </html>
