@@ -1,4 +1,4 @@
-/* Studie 21 – feltene i 3D: hvert felt er en topp der det ligger, like høy som produksjonen det året.
+/* Studie 23 – feltene i 3D: hvert felt er en topp der det ligger, like høy som produksjonen det året.
    Toppene legges sammen der feltene ligger tett, så klynger av felt blir til rygger. */
 import * as THREE from "three";
 import { MapControls } from "three/addons/controls/MapControls.js";

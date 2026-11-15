@@ -1,4 +1,4 @@
-/* Studie 21 – Hva kom opp av havet? Produksjonshistorikken på norsk sokkel */
+/* Studie 23 – Hva kom opp av havet? Produksjonshistorikken på norsk sokkel */
 (async function () {
   const S = window.Skatt;
   const tip = S.tooltip();
