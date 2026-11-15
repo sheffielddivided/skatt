@@ -37,6 +37,7 @@
     { group: "Pengebruk", items: [
       ["utgifter.html", "Hvor går skattepengene?", "Offentlige utgifter etter formål"],
       ["oljepenger.html", "Oljepengene", "Inn i fondet og ut i budsjettet"],
+      ["sokkel.html", "Hva kom opp av havet?", "Olje og gass felt for felt siden 1971"],
     ] },
     { group: "Kommuner", items: [
       ["profil.html", "Kommuneprofilen", "Sammenhenger mellom 21 indikatorer"],
