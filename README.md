@@ -22,6 +22,7 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `vind.html` | **Vindkraft i Europa** – installert kapasitet og produksjon i 39 land 1990–i dag, absolutt, per innbygger, per areal og som andel av all kapasitet, produksjon og forbruk, kapasitetsfaktor, land- og havvind, sesongvariasjon måned for måned, støtteordninger og beregnet støtte per MWh (CEER), havvindauksjoner, og alle norske vindkraftverk (NVE) | Ember, Eurostat, CEER, NVE, SSB 08307 |
 | `brann.html` | **Boligbranner i kommunene** – boligbranner per innbygger 2015–i dag sammenholdt med boligpris, flytting, befolkningsendring, alder og piper. Samme motor som `profil.html` | SSB (KOSTRA, 06035, 06913) |
 | `sykefravaer.html` | **Sykefraværet i kommunene** – legemeldt sykefravær 2015–i dag per kommune, etter kjønn og alder, justert for alder og kjønn, og sammenheng med uføretrygd, utdanning og inntekt | FHI (grunnlag fra SSB) |
+| `sokkel.html` | **Hva kom opp av havet?** – produksjonen på norsk sokkel felt for felt siden 1971 som rullefortelling, kart over feltene år for år, gjenstående reserver og tabell over alle felt | Sokkeldirektoratet (FactPages) |
 | `petroleum.html` | **Petroleumsskatten** – ordinær skatt + særskatt over tid, andel av upersonlige skattytere og av all skatt, løpende/faste kroner | SSB 07391, 03014 |
 | `eiendomsskatt.html` | **Eiendomsskatten** – inntekter fra bolig, fritid, kraft og næring siden 2007, ordninger, satser og enebolig-eksempel per kommune | SSB 14674, 14155 |
 | `naering.html` | **Næringslivet** – sysselsatte etter næring per kommune 2008–, spesialisering, pendling og sammenheng med skatt | SSB 13470 |
@@ -56,6 +57,7 @@ python3 scripts/build_elbil.py        # Elbiler i verden (IEA via OWID, Eurostat
 python3 scripts/build_bolig.py        # Boligpriser i verden (OECD, SSB)
 python3 scripts/build_inflasjon.py    # Inflasjon i verden (Verdensbanken, BIS, FRED/IMF)
 python3 scripts/build_vind.py         # Vindkraft i Europa (Ember, Eurostat, Verdensbanken, NVE, SSB)
+python3 scripts/build_sokkel.py       # Produksjonen på norsk sokkel (Sokkeldirektoratet)
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.

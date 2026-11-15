@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sokkelen · Norge ASA</title>
+  <meta name="description" content="Hva har kommet opp av havet? Produksjonen av olje og gass på norsk sokkel felt for felt siden Ekofisk i 1971.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    /* Rullefortelling: grafen står fast mens stegene glir forbi */
+    .scrolly { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); gap: 40px; margin-top: 28px; }
+    .scrolly .steps { padding: 18vh 0 40vh; }
+    .scrolly .step { min-height: 72vh; display: flex; align-items: center; }
+    .scrolly .step:last-child { min-height: 60vh; }
+    .scrolly .step .card { padding: 22px 24px; opacity: .45; transition: opacity .3s; }
+    .scrolly .step.is-active .card { opacity: 1; }
+    .scrolly .step .yr { font-family: var(--font-display); font-size: 15px; color: var(--text-3); }
+    .scrolly .step h2 { font-family: var(--font-display); font-weight: 500; font-size: 26px; margin: 4px 0 10px; letter-spacing: -.01em; }
+    .scrolly .step p { margin: 0 0 10px; color: var(--text-2); font-size: 15px; line-height: 1.6; }
+    .scrolly .step p:last-child { margin-bottom: 0; }
+    .scrolly .step b { color: var(--text); font-weight: 600; }
+    .scrolly .stage { position: sticky; top: 76px; height: calc(100vh - 100px); display: flex; flex-direction: column; justify-content: center; }
+    .scrolly .stage .card { padding: 20px 20px 14px; }
+    .stage-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+    .stage-head h3 { font-size: 15px; font-weight: 650; }
+    .stage-head .now { font-family: var(--font-display); font-size: 34px; letter-spacing: -.02em; line-height: 1; }
+    .stage-head .now small { font-family: var(--font); font-size: 13px; color: var(--text-3); margin-left: 6px; letter-spacing: 0; }
+    #story-chart .layer { transition: fill .5s, fill-opacity .5s; }
+    #story-chart .peak text { fill: var(--text-2); font-size: 12px; font-weight: 600; }
+    #story-chart .peak line { stroke: var(--text-3); }
+    #story-chart .flabel { fill: var(--text); font-size: 12px; font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+    #story-chart .cross { stroke: var(--text-3); stroke-width: 1; pointer-events: none; }
+    .sec-intro { max-width: 70ch; margin: 64px 0 0; }
+    .sec-intro h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(26px, 3vw, 34px); }
+    .sec-intro p { color: var(--text-2); margin: 8px 0 0; }
+    .mapwrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr); gap: 24px; align-items: start; }
+    .player { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .player input[type=range] { flex: 1; accent-color: var(--accent); }
+    .player .yr { font-family: var(--font-display); font-size: 28px; min-width: 64px; text-align: right; }
+    #map svg { background: var(--sea); border-radius: var(--radius-sm); }
+    #map .land { fill: var(--map-empty); stroke: var(--border-strong); stroke-width: .6; }
+    #map .fld { stroke: var(--surface); stroke-width: 1.5; cursor: pointer; transition: r .35s; }
+    #map .mlabel { fill: var(--text); font-size: 11.5px; font-weight: 600; paint-order: stroke; stroke: var(--sea); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+    #map .sealabel { fill: var(--text-3); font-size: 12px; font-style: italic; letter-spacing: .06em; }
+    .mapside .stat { padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .mapside .stat:last-child { border-bottom: 0; }
+    .mapside .l { font-size: 13px; color: var(--text-2); }
+    .mapside .v { font-size: 26px; font-weight: 650; letter-spacing: -.02em; margin-top: 2px; }
+    .mapside .s { font-size: 12.5px; color: var(--text-3); }
+    .mapside ol { margin: 6px 0 0; padding-left: 20px; font-size: 13.5px; color: var(--text-2); }
+    .mapside ol b { color: var(--text); font-weight: 600; }
+    #bars .blabel { fill: var(--text-2); font-size: 12px; }
+    #bars .bval { fill: var(--text-3); font-size: 11.5px; }
+    @media (max-width: 1000px) {
+      .scrolly { grid-template-columns: 1fr; gap: 0; }
+      .scrolly .stage { grid-row: 1; top: 64px; height: auto; z-index: 2; background: var(--bg); padding: 8px 0; }
+      .scrolly .steps { grid-row: 2; padding: 4vh 0 30vh; position: relative; z-index: 3; }
+      .scrolly .step { min-height: 80vh; align-items: flex-end; }
+      .scrolly .step .card { opacity: 1; box-shadow: var(--shadow); }
+      .stage-head .now { font-size: 26px; }
+      .mapwrap { grid-template-columns: 1fr; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 21</span>
+        <h1 class="display">Hva kom opp av havet?</h1>
+        <p class="muted">Siden Ekofisk startet i 1971 har over hundre felt på norsk sokkel pumpet opp olje og gass. Rull nedover og se hvordan produksjonen bygde seg opp felt for felt, hvem de store var, og hvor mye som fortsatt ligger igjen.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <section class="scrolly" aria-label="Produksjonshistorikken steg for steg">
+      <div class="steps" id="steps"></div>
+      <div class="stage">
+        <div class="card">
+          <div class="stage-head">
+            <h3 id="stage-title">Produksjon per år, millioner Sm³ oljeekvivalenter</h3>
+            <span class="now" id="stage-now"></span>
+          </div>
+          <div class="legend" id="story-legend"></div>
+          <div class="chart" id="story-chart"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="sec-intro">
+      <h2>Felt for felt</h2>
+      <p>Hvert felt er en sirkel der det ligger, og størrelsen viser hvor mye feltet har produsert til og med året du velger. Fylte sirkler produserte det året, åpne sirkler er stengt ned. Trykk på avspilling og se sokkelen fylle seg opp fra Ekofisk i sør til Barentshavet i nord.</p>
+    </div>
+    <section class="card panel">
+      <div class="mapwrap">
+        <div>
+          <div class="player">
+            <button class="btn" id="play" aria-label="Spill av"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg><span>Spill av</span></button>
+            <input type="range" id="year" aria-label="År">
+            <span class="yr" id="map-year"></span>
+          </div>
+          <div class="legend" style="margin-bottom:8px"><span class="item"><span class="sw" style="background:var(--series-1);opacity:.6;border-radius:50%"></span>I produksjon i året</span><span class="item"><span class="sw" style="border:1px solid var(--text-3);border-radius:50%"></span>Stengt ned</span><span class="item" style="color:var(--text-3)">Størrelse = produsert til og med året</span></div>
+          <div class="chart" id="map"></div>
+        </div>
+        <div class="mapside" id="map-side" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <div class="sec-intro">
+      <h2>Hvor mye er igjen?</h2>
+      <p>Sokkeldirektoratet anslår hvor mye hvert felt kan produsere i hele levetiden. Søylene viser hvor mye som er solgt og levert så langt, og hvor mye som gjenstår, for de 20 feltene med størst utvinnbare reserver.</p>
+    </div>
+    <section class="card panel">
+      <div class="legend" id="bars-legend"></div>
+      <div class="chart" id="bars"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Antall felt i produksjon</h2><p>Felt med produksjon i løpet av året.</p></div></div>
+        <div class="chart" id="c-count"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Gjennomsnittlig produksjon per felt</h2><p>Millioner Sm³ o.e. per felt og år. Nye felt er mindre enn de gamle gigantene.</p></div></div>
+        <div class="chart" id="c-avg"></div>
+      </section>
+    </div>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle felt</h2><p id="tbl-sub">Klikk på en kolonne for å sortere.</p></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+      </div>
+      <div id="table"></div>
+    </section>
+
+    <section class="story">
+      <div><h3>Oljeekvivalenter</h3><p>For å kunne legge sammen olje, gass, NGL og kondensat regnes alt om til oljeekvivalenter (o.e.). 1 000 Sm³ gass regnes som 1 Sm³ o.e. En standard kubikkmeter (Sm³) er omtrent 6,29 fat.</p></div>
+      <div><h3>Hva er med?</h3><p>Salgbar (netto) produksjon fra alle felt med produksjon, slik Sokkeldirektoratet rapporterer den. Prøveproduksjon fra funn som ikke er utbygd, er ikke med. Inneværende år er ufullstendig og er tatt med bare i kartet og tabellen.</p></div>
+      <div><h3>Kilder</h3><p>Sokkeldirektoratet (Sodir), FactPages og FactMaps: produksjon per felt (lag 7300), feltfakta (7100) og reserver per felt (7113). Data under Norsk lisens for offentlige data (NLOD 2.0). Kart: Eurostat GISCO.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: <a href="https://factpages.sodir.no/">Sokkeldirektoratet</a> (NLOD 2.0) · Kart: © EuroGeographics (Eurostat GISCO)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/sokkel.js"></script>
+</body>
+</html>

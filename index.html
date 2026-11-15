@@ -302,6 +302,15 @@
           <div class="meta"><span class="pill">Ember</span><span class="pill">Eurostat</span><span class="pill">CEER</span><span class="pill">NVE</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
+      <a class="card study" data-g="pengebruk" href="sokkel.html">
+        <div class="thumb" id="thumb-sokkel" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 23 · Olje og gass</span>
+          <h3 class="display">Hva kom opp av havet?</h3>
+          <p>Produksjonen på norsk sokkel felt for felt siden Ekofisk i 1971: gigantene, toppåret, gassen, Johan Sverdrup og hvor mye som fortsatt ligger igjen.</p>
+          <div class="meta"><span class="pill">Sokkeldirektoratet</span><span class="go">Rull gjennom historien →</span></div>
+        </div>
+      </a>
       <div class="card study soon">
         <div class="thumb" aria-hidden="true">
           <svg viewBox="0 0 200 120" style="width:120px;height:auto;color:var(--border-strong)"><g fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 5" stroke-linecap="round"><rect x="20" y="20" width="160" height="80" rx="12"/><path d="M100 45v30M85 60h30"/></g></svg>
@@ -727,8 +736,23 @@
       for (let k = 1; k < labs.length; k++) if (labs[k].y - labs[k - 1].y < 13) labs[k].y = labs[k - 1].y + 13;
       labs.forEach((l) => svg.append("text").attr("x", l.x).attr("y", l.y).attr("fill", "var(--text-2)").attr("font-size", 11.5).attr("font-weight", l.s.c === "NOR" ? 700 : 500).text(l.s.n));
     }
-    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi();
-    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi(); });
+    const sok = await fetch("data/sokkel.json").then((r) => r.json());
+    function drawSokkel() {
+      const el = document.getElementById("thumb-sokkel");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { l: 24, r: 24, t: 30, b: 12 };
+      const last = sok.partial ? sok.partial.year - 1 : sok.years[sok.years.length - 1];
+      const Y = sok.years.filter((yy) => yy <= last), keys = ["oil", "gas", "ngl", "cond"];
+      const rows = Y.map((yy, i) => { const r = { y: yy }; keys.forEach((k) => (r[k] = sok.totals[k][i])); return r; });
+      const st = d3.stack().keys(keys)(rows);
+      const x = d3.scaleLinear(d3.extent(Y), [m.l, w - m.r]), y = d3.scaleLinear([0, d3.max(rows, (r) => d3.sum(keys, (k) => r[k]))], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      const col = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)"];
+      svg.selectAll("path").data(st).join("path").attr("fill", (s, i) => col[i]).attr("d", d3.area().x((p) => x(p.data.y)).y0((p) => y(p[0])).y1((p) => y(p[1])).curve(d3.curveMonotoneX));
+      svg.append("text").attr("x", m.l).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text(`Olje (blått) og gass (oransje) fra norsk sokkel, ${Y[0]}–${last}`);
+    }
+    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi(); drawSokkel();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawIn(); drawVi(); drawSokkel(); });
   })();
   </script>
 </body>
