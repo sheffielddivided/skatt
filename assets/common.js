@@ -37,6 +37,7 @@
     { group: "Pengebruk", items: [
       ["utgifter.html", "Hvor går skattepengene?", "Offentlige utgifter etter formål"],
       ["oljepenger.html", "Oljepengene", "Inn i fondet og ut i budsjettet"],
+      ["sokkel.html", "Hva kom opp av havet?", "Olje og gass felt for felt siden 1971"],
     ] },
     { group: "Kommuner", items: [
       ["profil.html", "Kommuneprofilen", "Sammenhenger mellom 21 indikatorer"],
@@ -56,6 +57,8 @@
       ["handel.html", "Handelen med verden", "Eksport og import – med og uten olje og gass"],
       ["elbil.html", "Elbiler i verden", "Andel av nybilsalg og bilpark i 60 land"],
       ["bolig.html", "Boligpriser i verden", "Boligpriser, husleie og inntekt i 50 land"],
+      ["inflasjon.html", "Inflasjon i verden", "Prisvekst, rente, pengemengde og budsjett i 190 land"],
+      ["vind.html", "Vindkraft i Europa", "Kapasitet, produksjon og subsidier i 39 land"],
       ["rettsstat.html", "Rettsstaten i verden", "Korrupsjon, rettigheter og domstoler i 143 land"],
       ["elnino.html", "El Niño", "Stillehavet, verdensværet og Europa"],
     ] },

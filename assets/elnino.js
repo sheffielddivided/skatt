@@ -1,4 +1,4 @@
-/* Studie 21 – El Niño */
+/* Studie 24 – El Niño */
 (async function () {
   const S = window.Skatt;
   const tip = S.tooltip();

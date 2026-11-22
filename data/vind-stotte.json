@@ -1,0 +1,651 @@
+{
+ "source": "CEER, Status Review of Renewable Support Schemes in Europe for 2022 and 2023 (juli 2025); regjeringen.no, Bundesnetzagentur, Energistyrelsen, DESNZ",
+ "url": "https://www.ceer.eu/publication/status-review-of-renewable-support-schemes-in-europe-for-2022-and-2023/",
+ "note": "Støttenivået er CEERs beregnede støtte per MWh: utbetalt tariff eller premie minus markedsprisen. Negative tall betyr at produsentene betalte tilbake til staten eller strømkundene. Irland er utelatt fordi tallene for land- og havvind ser ut til å være byttet om.",
+ "ceer": {
+  "PRT": {
+   "2022": {
+    "on_gwh": 12792.2,
+    "off_gwh": 78.2,
+    "on_lvl": 94.3,
+    "off_lvl": 149.91,
+    "on_mw": 5948,
+    "off_mw": 25
+   },
+   "2023": {
+    "on_gwh": 12418.9,
+    "off_gwh": 78.7,
+    "on_lvl": 98.61,
+    "off_lvl": 160.75,
+    "on_mw": 5967,
+    "off_mw": 25
+   },
+   "all2022": {
+    "meur": 1667,
+    "per_mwh": 34.14
+   }
+  },
+  "FRA": {
+   "2022": {
+    "on_gwh": 32067.5,
+    "off_gwh": 292.0,
+    "on_lvl": -69.65,
+    "off_lvl": -51.91,
+    "on_mw": 17648,
+    "off_mw": 480
+   },
+   "2023": {
+    "on_gwh": 34622.4,
+    "off_gwh": 1723.8,
+    "on_lvl": -71.82,
+    "off_lvl": -21.13,
+    "on_mw": 14812,
+    "off_mw": 731
+   },
+   "all2022": {
+    "meur": -1636,
+    "per_mwh": -3.44
+   }
+  },
+  "POL": {
+   "2022": {
+    "on_gwh": 12809.8,
+    "off_gwh": null,
+    "on_lvl": 40.93,
+    "off_lvl": null,
+    "on_mw": 1076,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 12558.9,
+    "off_gwh": null,
+    "on_lvl": 34.83,
+    "off_lvl": null,
+    "on_mw": 1859,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": 730,
+    "per_mwh": 4.06
+   }
+  },
+  "SWE": {
+   "2022": {
+    "on_gwh": 33395.6,
+    "off_gwh": 267.0,
+    "on_lvl": 0.85,
+    "off_lvl": 0.85,
+    "on_mw": 11139,
+    "off_mw": 79
+   },
+   "2023": {
+    "on_gwh": 32019.0,
+    "off_gwh": 267.0,
+    "on_lvl": 0.56,
+    "off_lvl": 0.56,
+    "on_mw": 10642,
+    "off_mw": 79
+   },
+   "all2022": {
+    "meur": 36,
+    "per_mwh": 0.21
+   }
+  },
+  "MKD": {
+   "2022": {
+    "on_gwh": 107.7,
+    "off_gwh": null,
+    "on_lvl": -161.9,
+    "off_lvl": null,
+    "on_mw": 37,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 104.1,
+    "off_gwh": null,
+    "on_lvl": -107.53,
+    "off_lvl": null,
+    "on_mw": 37,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": -58,
+    "per_mwh": -9.79
+   }
+  },
+  "ROU": {
+   "2022": {
+    "on_gwh": 6909.0,
+    "off_gwh": null,
+    "on_lvl": 32.3,
+    "off_lvl": null,
+    "on_mw": 2960,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 7484.0,
+    "off_gwh": null,
+    "on_lvl": 32.87,
+    "off_lvl": null,
+    "on_mw": 2960,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": 577,
+    "per_mwh": 10.31
+   }
+  },
+  "GBR": {
+   "2022": {
+    "on_gwh": 27808.6,
+    "off_gwh": 36739.6,
+    "on_lvl": 26,
+    "off_lvl": 15,
+    "on_mw": 13649,
+    "off_mw": 10795
+   },
+   "2023": {
+    "on_gwh": 29612.7,
+    "off_gwh": 39191.0,
+    "on_lvl": 30,
+    "off_lvl": 36,
+    "on_mw": 13702,
+    "off_mw": 11224
+   },
+   "all2022": {
+    "meur": 2165,
+    "per_mwh": 7.1
+   }
+  },
+  "CZE": {
+   "2022": {
+    "on_gwh": 632.5,
+    "off_gwh": null,
+    "on_lvl": 61.26,
+    "off_lvl": null,
+    "on_mw": null,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 217.9,
+    "off_gwh": null,
+    "on_lvl": 22.58,
+    "off_lvl": null,
+    "on_mw": null,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": 1355,
+    "per_mwh": 15.97
+   }
+  },
+  "HUN": {
+   "2022": {
+    "on_gwh": 329.2,
+    "off_gwh": null,
+    "on_lvl": -159.89,
+    "off_lvl": null,
+    "on_mw": 174,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": -526,
+    "per_mwh": -14.68
+   }
+  },
+  "SVK": {
+   "2022": {
+    "on_gwh": 0.0,
+    "off_gwh": null,
+    "on_lvl": null,
+    "off_lvl": null,
+    "on_mw": 0,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 0.0,
+    "off_gwh": null,
+    "on_lvl": null,
+    "off_lvl": null,
+    "on_mw": 0,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": 26,
+    "per_mwh": 0.97
+   }
+  },
+  "NLD": {
+   "2022": {
+    "on_gwh": 11065.8,
+    "off_gwh": 7497.8,
+    "on_lvl": null,
+    "off_lvl": null,
+    "on_mw": 4740,
+    "off_mw": 2222
+   },
+   "2023": {
+    "on_gwh": 14997.3,
+    "off_gwh": 8402.2,
+    "on_lvl": 7.69,
+    "off_lvl": 31.2,
+    "on_mw": 5319,
+    "off_mw": 2222
+   },
+   "all2022": {
+    "meur": 7,
+    "per_mwh": 0.06
+   }
+  },
+  "AUT": {
+   "2022": {
+    "on_gwh": 4948.0,
+    "off_gwh": null,
+    "on_lvl": -115.78,
+    "off_lvl": null,
+    "on_mw": 723,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 1622.1,
+    "off_gwh": null,
+    "on_lvl": -33.95,
+    "off_lvl": null,
+    "on_mw": 1502,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": -752,
+    "per_mwh": -10.87
+   }
+  },
+  "DEU": {
+   "2022": {
+    "on_gwh": 88844.7,
+    "off_gwh": 22886.1,
+    "on_lvl": 26.77,
+    "off_lvl": 161.27,
+    "on_mw": 56891,
+    "off_mw": 8116
+   },
+   "2023": {
+    "on_gwh": 98228.8,
+    "off_gwh": 22272.8,
+    "on_lvl": -0.17,
+    "off_lvl": -0.55,
+    "on_mw": 59009,
+    "off_mw": 8112
+   },
+   "all2022": {
+    "meur": 13414,
+    "per_mwh": 23.17
+   }
+  },
+  "GRC": {
+   "2022": {
+    "on_gwh": 10636.8,
+    "off_gwh": null,
+    "on_lvl": -67.75,
+    "off_lvl": null,
+    "on_mw": 5084,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 10681.7,
+    "off_gwh": null,
+    "on_lvl": 13.65,
+    "off_lvl": null,
+    "on_mw": 5081,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": -572,
+    "per_mwh": -10.86
+   }
+  },
+  "EST": {
+   "2022": {
+    "on_gwh": 438.4,
+    "off_gwh": null,
+    "on_lvl": 53.7,
+    "off_lvl": null,
+    "on_mw": 319,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 370.9,
+    "off_gwh": null,
+    "on_lvl": 53.7,
+    "off_lvl": null,
+    "on_mw": 426,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": 87,
+    "per_mwh": 9.76
+   }
+  },
+  "FIN": {
+   "2022": {
+    "on_gwh": null,
+    "off_gwh": null,
+    "on_lvl": null,
+    "off_lvl": null,
+    "on_mw": 2474,
+    "off_mw": 43
+   },
+   "2023": {
+    "on_gwh": 4573.1,
+    "off_gwh": null,
+    "on_lvl": 22.8,
+    "off_lvl": null,
+    "on_mw": 2474,
+    "off_mw": 43
+   },
+   "all2022": {
+    "meur": 0,
+    "per_mwh": 0.0
+   }
+  },
+  "LUX": {
+   "2022": {
+    "on_gwh": 300.7,
+    "off_gwh": null,
+    "on_lvl": -27.79,
+    "off_lvl": null,
+    "on_mw": 164,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 473.0,
+    "off_gwh": null,
+    "on_lvl": 14.87,
+    "off_lvl": null,
+    "on_mw": 196,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": -11,
+    "per_mwh": -4.67
+   }
+  },
+  "ITA": {
+   "2022": {
+    "on_gwh": 15303.0,
+    "off_gwh": 18.1,
+    "on_lvl": 25.53,
+    "off_lvl": 11.05,
+    "on_mw": 8844,
+    "off_mw": 30
+   },
+   "2023": {
+    "on_gwh": 16158.4,
+    "off_gwh": 52.4,
+    "on_lvl": 4.48,
+    "off_lvl": 82.49,
+    "on_mw": 7922,
+    "off_mw": 30
+   },
+   "all2022": {
+    "meur": 6439,
+    "per_mwh": 22.67
+   }
+  },
+  "ESP": {
+   "2022": {
+    "on_gwh": 17810.6,
+    "off_gwh": null,
+    "on_lvl": 20.01,
+    "off_lvl": null,
+    "on_mw": 11320,
+    "off_mw": null
+   },
+   "2023": {
+    "on_gwh": 147.1,
+    "off_gwh": null,
+    "on_lvl": 3.97,
+    "off_lvl": null,
+    "on_mw": 73,
+    "off_mw": null
+   },
+   "all2022": {
+    "meur": 3359,
+    "per_mwh": 11.48
+   }
+  },
+  "IRL": {
+   "all2022": {
+    "meur": 23,
+    "per_mwh": 0.68
+   }
+  },
+  "MLT": {
+   "all2022": {
+    "meur": 13,
+    "per_mwh": 5.64
+   }
+  },
+  "SVN": {
+   "all2022": {
+    "meur": 0,
+    "per_mwh": 0.0
+   }
+  }
+ },
+ "schemes": {
+  "NOR": {
+   "type": [
+    "Elsertifikat (til 2021)",
+    "CfD havvind"
+   ],
+   "now": "Ingen produksjonsstøtte for nye landvindparker. Havvind: tosidig differansekontrakt (Sørlige Nordsjø II) og statsstøttekonkurranse for flytende havvind (Utsira Nord).",
+   "hist": "Felles elsertifikatmarked med Sverige fra 2012. Norske anlegg måtte være i drift innen utgangen av 2021 for å få sertifikater, og det meste av dagens landvind ble bygget i denne perioden. Hywind Tampen fikk investeringsstøtte fra Enova på om lag 2,3 mrd. kroner.",
+   "fin": "Elsertifikatene betales av strømkundene via strømregningen. Havvindstøtten betales over statsbudsjettet.",
+   "tax": "Grunnrenteskatt på landbasert vindkraft fra 2024 og produksjonsavgift til vertskommunene."
+  },
+  "SWE": {
+   "type": [
+    "Elsertifikat"
+   ],
+   "now": "Ingen ny produksjonsstøtte. Anlegg satt i drift etter 2021 får ikke elsertifikater, og ordningen avsluttes i 2035.",
+   "hist": "Elsertifikater siden 2003, felles med Norge fra 2012. Sverige bygget mye landvind uten direkte statlige tilskudd utover sertifikatene.",
+   "fin": "Strømkundene (kvoteplikt)."
+  },
+  "DNK": {
+   "type": [
+    "Pristillegg",
+    "CfD havvind"
+   ],
+   "now": "Havvind tildeles gjennom anbud. Anbudet i 2024 uten statsstøtte fikk ingen bud, og ordningen ble lagt om til tosidige differansekontrakter i 2025.",
+   "hist": "Tidlig pioner med faste innmatingstariffer fra 1990-tallet og senere pristillegg for landvind. Havvindparker som Horns Rev 3 og Kriegers Flak fikk fast pris gjennom anbud.",
+   "fin": "Fra 2022 over statsbudsjettet (PSO-avgiften på strøm er avviklet)."
+  },
+  "DEU": {
+   "type": [
+    "Innmatingstariff (til 2017)",
+    "Markedspremie",
+    "Negative bud havvind"
+   ],
+   "now": "Landvind: anbud om glidende markedspremie (staten betaler mellomlegget når markedsprisen er under budprisen). Havvind: anbud der utbyggerne betaler for å få området.",
+   "hist": "Fornybarloven EEG fra 2000 ga faste innmatingstariffer i 20 år. Fra 2017 ble støtten satt gjennom anbud. I 2023 betalte BP og TotalEnergies til sammen 12,6 mrd. euro for retten til 7 GW havvind, men i august 2025 kom det ingen bud på 2,5 GW.",
+   "fin": "EEG-avgiften på strømregningen ble fjernet i 2022. Støtten betales nå over statsbudsjettet (klimafondet KTF)."
+  },
+  "GBR": {
+   "type": [
+    "Grønne sertifikater (til 2017)",
+    "CfD"
+   ],
+   "now": "Tosidige differansekontrakter (CfD) tildelt i årlige auksjoner. I runde 7 (januar 2026) fikk 8,4 GW havvind 91,20 pund/MWh (2024-priser), flytende havvind 216,49 og landvind 72,24.",
+   "hist": "Renewables Obligation (sertifikatordning) fra 2002 til 2017. CfD fra 2014. Når markedsprisen er over avtaleprisen, betaler produsentene tilbake, som de gjorde i 2022.",
+   "fin": "Strømkundene via en avgift på leverandørene."
+  },
+  "NLD": {
+   "type": [
+    "Glidende premie (SDE++)",
+    "Nullsubsidie havvind"
+   ],
+   "now": "Landvind: SDE++, en glidende premie fastsatt i konkurranse. Havvind: tildeling uten subsidier siden 2017, delvis med betaling til staten. Svak interesse i 2024–2025 har ført til planer om å innføre støtte igjen.",
+   "hist": "SDE+ fra 2011. Hollandse Kust Zuid (2018) var en av de første havvindparkene uten subsidier.",
+   "fin": "Statsbudsjettet, finansiert av en avgift på strøm og gass."
+  },
+  "BEL": {
+   "type": [
+    "Grønne sertifikater",
+    "CfD havvind"
+   ],
+   "now": "Havvind i Prinsesse Elisabeth-sonen får tosidig CfD i 20 år, med pris satt i konkurranse.",
+   "hist": "Regionale grønne sertifikater for landvind og føderale sertifikater med minstepris for havvind.",
+   "fin": "Nettariffene og strømkundene."
+  },
+  "FRA": {
+   "type": [
+    "Innmatingstariff",
+    "Komplementær godtgjøring (CfD)"
+   ],
+   "now": "Anbud om «complément de rémunération», en tosidig premie: produsenten betaler tilbake når markedsprisen er høyere enn avtaleprisen. Havvind tildeles gjennom anbud.",
+   "hist": "Kjøpsplikt med faste tariffer fram til 2016. I 2022–2023 ga de høye strømprisene store tilbakebetalinger til staten.",
+   "fin": "Statsbudsjettet (energiavgiften på strøm går til staten)."
+  },
+  "ESP": {
+   "type": [
+    "Regulert avkastning",
+    "CfD-auksjoner"
+   ],
+   "now": "Auksjoner (REER) siden 2021 der vinnerne får en fast pris på deler av produksjonen.",
+   "hist": "Høye innmatingstariffer fram til 2013. Deretter ble støtten lagt om til en regulert avkastning på investeringen for eksisterende anlegg.",
+   "fin": "Strømkundene og statsbudsjettet."
+  },
+  "PRT": {
+   "type": [
+    "Garantert tariff"
+   ],
+   "now": "Nye anlegg bygges i markedet eller gjennom auksjoner. Eldre vindparker har fortsatt garanterte tariffer.",
+   "hist": "Garanterte innmatingstariffer for vindkraft fra 2000-tallet. Portugal har den høyeste beregnede støtten per MWh vindkraft i CEERs oversikt.",
+   "fin": "Strømkundene via nettariffene."
+  },
+  "ITA": {
+   "type": [
+    "Grønne sertifikater (til 2015)",
+    "Premie/CfD"
+   ],
+   "now": "Anbud om tosidig premie (FER 1, FER X). Havvind og andre «kostbare» teknologier får egne auksjoner (FER 2).",
+   "hist": "Grønne sertifikater fram til 2015, deretter premier tildelt i auksjoner.",
+   "fin": "Strømkundene (A3-/ASOS-komponenten i nettleien)."
+  },
+  "IRL": {
+   "type": [
+    "Fast pris (REFIT)",
+    "CfD (RESS/ORESS)"
+   ],
+   "now": "Tosidige differansekontrakter i auksjonene RESS (land) og ORESS (hav).",
+   "hist": "REFIT-ordningen ga minstepris fra 2006.",
+   "fin": "PSO-avgiften på strømregningen."
+  },
+  "POL": {
+   "type": [
+    "Grønne sertifikater",
+    "CfD"
+   ],
+   "now": "Tosidige differansekontrakter gjennom auksjoner. Havvind fikk CfD administrativt i 2021 og gjennom auksjoner fra 2025.",
+   "hist": "Grønne sertifikater fram til 2016. Avstandsregelen 10H stoppet nesten all ny landvind fra 2016 til den ble myket opp i 2023.",
+   "fin": "Avgift på strømregningen."
+  },
+  "FIN": {
+   "type": [
+    "Innmatingspremie (til 2017)"
+   ],
+   "now": "Ingen produksjonsstøtte for nye anlegg. Finland har bygget ut svært mye landvind på rent kommersielle vilkår siden 2019.",
+   "hist": "Garantert målpris (premie) for anlegg godkjent 2011–2017, og en teknologinøytral premieauksjon i 2018.",
+   "fin": "Statsbudsjettet."
+  },
+  "AUT": {
+   "type": [
+    "Innmatingstariff",
+    "Markedspremie"
+   ],
+   "now": "Markedspremie etter fornybarloven EAG fra 2021.",
+   "hist": "Faste tariffer etter Ökostromgesetz. Da prisene steg i 2022, valgte mange anlegg å forlate tariffen og selge i markedet.",
+   "fin": "Fornybaravgift og -bidrag på strømregningen."
+  },
+  "GRC": {
+   "type": [
+    "Innmatingspremie"
+   ],
+   "now": "Premier tildelt i auksjoner. I 2022–2023 ble overskuddet for fornybaranlegg i markedet begrenset til 85 euro/MWh.",
+   "hist": "Faste tariffer fram til 2016.",
+   "fin": "Et eget fornybarfond finansiert av strømkundene og CO₂-kvoteinntekter."
+  },
+  "LTU": {
+   "type": [
+    "Innmatingstariff",
+    "CfD"
+   ],
+   "now": "Faste tariffer er avviklet. Havvind og nye anlegg får differansekontrakter.",
+   "fin": "Strømkundene (PSO)."
+  },
+  "EST": {
+   "type": [
+    "Premie",
+    "Teknologinøytrale anbud"
+   ],
+   "now": "Teknologinøytrale anbud. Fra 2023 må vinnerne produsere halvparten av tilbudt kapasitet i vinterkvartalene.",
+   "fin": "Fornybaravgift på strømregningen."
+  },
+  "CZE": {
+   "type": [
+    "Grønn bonus",
+    "Auksjonsbonus"
+   ],
+   "now": "Premie (grønn bonus) for anlegg under 1 MW og auksjoner for større anlegg. Faste tariffer er avviklet for nye anlegg.",
+   "hist": "Store kostnader skyldes særlig solkraft bygget 2008–2013.",
+   "fin": "Strømkundene og statsbudsjettet."
+  },
+  "ROU": {
+   "type": [
+    "Grønne sertifikater",
+    "CfD"
+   ],
+   "now": "Tosidige differansekontrakter fra 2024.",
+   "hist": "Grønne sertifikater fra 2008 førte til rask vindkraftutbygging rundt 2010–2013.",
+   "fin": "Strømkundene."
+  }
+ },
+ "auctions": [
+  {
+   "date": "2023-07",
+   "c": "DEU",
+   "t": "7 GW havvind uten støtte. BP og TotalEnergies betalte til sammen 12,6 mrd. euro for retten til å bygge (dynamisk budgivning).",
+   "kind": "betaling"
+  },
+  {
+   "date": "2024-03",
+   "c": "NOR",
+   "t": "Sørlige Nordsjø II (1,5 GW): Ventyr (Parkwind og Ingka) vant med 115 øre/kWh i en tosidig differansekontrakt med staten. To budgivere.",
+   "kind": "cfd"
+  },
+  {
+   "date": "2024-12",
+   "c": "DNK",
+   "t": "Danmarks største havvindanbud (3 GW) uten statsstøtte og med krav om betaling til staten fikk ingen bud. Anbudet ble senere lagt om til differansekontrakter.",
+   "kind": "ingen"
+  },
+  {
+   "date": "2025-08",
+   "c": "DEU",
+   "t": "Ingen bud på to havvindområder i Nordsjøen (2,5 GW) i et anbud uten støtte.",
+   "kind": "ingen"
+  },
+  {
+   "date": "2025-12",
+   "c": "NOR",
+   "t": "Utsira Nord (flytende havvind): to søkere fikk hvert sitt prosjektområde. ESA har godkjent inntil 35 mrd. kroner i statsstøtte, som skal fordeles i en senere konkurranse.",
+   "kind": "cfd"
+  },
+  {
+   "date": "2026-01",
+   "c": "GBR",
+   "t": "CfD-runde 7: 8,4 GW havvind til 91,20 pund/MWh (2024-priser), flytende havvind 216,49 pund/MWh og landvind 72,24 pund/MWh.",
+   "kind": "cfd"
+  }
+ ]
+}
