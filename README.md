@@ -20,6 +20,7 @@ Statisk nettsted for GitHub Pages – ingen byggesteg.
 | `bolig.html` | **Boligpriser i verden** – reelle og nominelle boligpriser, husleie, pris mot inntekt og pris mot husleie i ca. 50 land fra 1970, avstand fra toppen, og boligpriser i norske regioner | OECD, SSB |
 | `inflasjon.html` | **Inflasjon i verden** – inflasjon i 190 land 1960–i dag med kart og rangering, sammenheng med pengemengde, styringsrente, utlånsrente, statsbudsjettets balanse, statsgjeld, valutakurs, BNP-vekst, ledighet, driftsbalanse og oljepris (mellom land og innen land, med signifikanstest og tidsforskyvning), inflasjonsbølgen 2021–2024 måned for måned, effekten av inflasjonsmål, diskusjon om hvorfor vi har et positivt inflasjonsmål og om inflasjon er en skjult skatt (Friedman, Keynes og motargumenter) med kalkulator for skatt på nominell avkastning, og hundre år med norsk inflasjon | Verdensbanken (WDI), BIS, FRED/IMF |
 | `vind.html` | **Vindkraft i Europa** – installert kapasitet og produksjon i 39 land 1990–i dag, absolutt, per innbygger, per areal og som andel av all kapasitet, produksjon og forbruk, kapasitetsfaktor, land- og havvind, sesongvariasjon måned for måned, støtteordninger og beregnet støtte per MWh (CEER), havvindauksjoner, og alle norske vindkraftverk (NVE) | Ember, Eurostat, CEER, NVE, SSB 08307 |
+| `elnino.html` | **El Niño** – hva El Niño er og hvorfor det oppstår (skjematisk tverrsnitt av Stillehavet), Niño-regionene på kart, ONI 1950–i dag og alle El Niño-/La Niña-episoder, dagens episode mot de store, global temperatur, korrelasjonskart for temperatur og nedbør i alle land, Europa land for land og NAO | NOAA CPC, NASA GISS, NOAA NCEI, Copernicus ERA5 (via OWID) |
 | `brann.html` | **Boligbranner i kommunene** – boligbranner per innbygger 2015–i dag sammenholdt med boligpris, flytting, befolkningsendring, alder og piper. Samme motor som `profil.html` | SSB (KOSTRA, 06035, 06913) |
 | `sykefravaer.html` | **Sykefraværet i kommunene** – legemeldt sykefravær 2015–i dag per kommune, etter kjønn og alder, justert for alder og kjønn, og sammenheng med uføretrygd, utdanning og inntekt | FHI (grunnlag fra SSB) |
 | `sokkel.html` | **Hva kom opp av havet?** – produksjonen på norsk sokkel felt for felt siden 1971 som rullefortelling, 3D-kart der hvert felt er en topp like høy som produksjonen (three.js), gjenstående reserver og tabell over alle felt | Sokkeldirektoratet (FactPages) |
@@ -58,6 +59,7 @@ python3 scripts/build_bolig.py        # Boligpriser i verden (OECD, SSB)
 python3 scripts/build_inflasjon.py    # Inflasjon i verden (Verdensbanken, BIS, FRED/IMF)
 python3 scripts/build_vind.py         # Vindkraft i Europa (Ember, Eurostat, Verdensbanken, NVE, SSB)
 python3 scripts/build_sokkel.py       # Produksjonen på norsk sokkel (Sokkeldirektoratet)
+python3 scripts/build_elnino.py       # El Niño (NOAA, NASA GISS, ERA5 via OWID)
 ```
 
 Skriptene kjøres i denne rekkefølgen fordi de senere bruker filene fra de første.

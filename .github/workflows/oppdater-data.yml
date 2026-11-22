@@ -38,6 +38,7 @@ jobs:
           python scripts/build_inflasjon.py
           python scripts/build_vind.py
           python scripts/build_sokkel.py
+          python scripts/build_elnino.py
       - name: Commit hvis endret
         run: |
           if git diff --quiet -- data; then

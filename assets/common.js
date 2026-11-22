@@ -60,6 +60,7 @@
       ["inflasjon.html", "Inflasjon i verden", "Prisvekst, rente, pengemengde og budsjett i 190 land"],
       ["vind.html", "Vindkraft i Europa", "Kapasitet, produksjon og subsidier i 39 land"],
       ["rettsstat.html", "Rettsstaten i verden", "Korrupsjon, rettigheter og domstoler i 143 land"],
+      ["elnino.html", "El Niño", "Stillehavet, verdensværet og Europa"],
     ] },
   ];
   const STUDIES = [["./", "Oversikt"], ...MENU.flatMap((g) => g.items.map(([h, n]) => [h, n]))];
