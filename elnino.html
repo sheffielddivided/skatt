@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El Niño · Norge ASA</title>
+  <meta name="description" content="Hva er El Niño, hvorfor oppstår det, og hva betyr det for været i verden og i Europa? Havtemperaturer i Stillehavet siden 1950, alle El Niño- og La Niña-episoder, global temperatur og hvordan temperaturen i hvert land henger sammen med El Niño.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studie.css">
+  <style>
+    :root { --warm: #d9584a; --warm-soft: #f4aea5; --cold: #2a78d6; --cold-soft: #9ec5f4; --sky: #eef3f8; --deep: #b9cde6; --landm: #c9b79a; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --warm: #ec8a7f; --warm-soft: #8f2a22; --cold: #5598e7; --cold-soft: #1c5cab; --sky: #171c22; --deep: #1d3350; --landm: #6b5c45; } }
+    :root[data-theme="dark"] { --warm: #ec8a7f; --warm-soft: #8f2a22; --cold: #5598e7; --cold-soft: #1c5cab; --sky: #171c22; --deep: #1d3350; --landm: #6b5c45; }
+    .section-title { margin: 56px 0 6px; font-size: 28px; }
+    .section-lead { margin: 0 0 4px; color: var(--text-2); max-width: 75ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+    .kgrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .kgrid > .card, .grid2 > .card { margin-top: 0; }
+    .wmap svg { overflow: hidden; }
+    .wmap path.c { stroke: var(--surface); stroke-width: .4; cursor: pointer; }
+    .wmap path.na { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .wmap path.sel { fill: none; stroke: var(--text); stroke-width: 1.8; pointer-events: none; }
+    .wmap .lg text, .nmap text.lab { fill: var(--text-2); font-size: 11.5px; }
+    .nmap path.land { fill: var(--map-empty); stroke: var(--surface); stroke-width: .4; }
+    .nmap .sea { fill: var(--sea); }
+    .nmap .box { stroke: var(--text); stroke-width: 1.2; fill-opacity: .85; }
+    .nmap .box.n34 { stroke-width: 2.2; }
+    .nmap .eq { stroke: var(--text-3); stroke-dasharray: 3 4; }
+    .walker svg { overflow: hidden; border-radius: 10px; }
+    .walker text { font-family: var(--font); }
+    .walker .lbl { fill: var(--text-2); font-size: 13px; }
+    .walker .lbl.b { fill: var(--text); font-weight: 650; }
+    .walker .lbl.s { font-size: 11.5px; fill: var(--text-3); }
+    .wcap { margin-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 24px; }
+    .wcap div { font-size: 14px; color: var(--text-2); }
+    .wcap b { display: block; color: var(--text); font-size: 14px; margin-bottom: 2px; }
+    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+    .steps .card { padding: 16px 18px; margin: 0; }
+    .steps .n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); font-size: 12.5px; font-weight: 650; margin-bottom: 8px; }
+    .steps h3 { font-size: 15px; margin: 0 0 4px; }
+    .steps p { margin: 0; font-size: 13.5px; color: var(--text-2); }
+    .rank { max-height: 560px; overflow: auto; }
+    .rank .r { display: grid; grid-template-columns: 26px minmax(0, 1fr) 110px 54px; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .rank .r:hover { background: var(--surface-2); }
+    .rank .r.no { background: color-mix(in srgb, var(--series-2) 14%, transparent); font-weight: 650; }
+    .rank .r.pick { outline: 1px solid var(--border-strong); }
+    .rank .r .i { color: var(--text-3); font-size: 11.5px; }
+    .rank .r .bw { position: relative; height: 8px; }
+    .rank .r .bw .z { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--border-strong); }
+    .rank .r .b { position: absolute; top: 0; height: 8px; border-radius: 3px; }
+    .rank .r .v { text-align: right; font-variant-numeric: tabular-nums; }
+    .rank .sep { font-size: 12px; color: var(--text-3); padding: 8px 6px 2px; }
+    .heat { overflow-x: auto; }
+    .heat table { border-collapse: separate; border-spacing: 3px; font-size: 13px; width: 100%; }
+    .heat th { font-weight: 550; color: var(--text-2); text-align: center; padding: 2px 4px; white-space: nowrap; }
+    .heat th.c { text-align: left; font-weight: 500; color: var(--text); cursor: pointer; }
+    .heat th.c:hover { text-decoration: underline; }
+    .heat tr.no th.c { font-weight: 700; }
+    .heat td { text-align: center; border-radius: 5px; padding: 5px 4px; font-variant-numeric: tabular-nums; min-width: 58px; cursor: pointer; }
+    .heat td.sig { font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--text); }
+    .heat td.pick { outline: 2px solid var(--text); }
+    .note { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; }
+    .tbl-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .tag.en { background: color-mix(in srgb, var(--warm) 20%, transparent); color: var(--text); }
+    .tag.ln { background: color-mix(in srgb, var(--cold) 20%, transparent); color: var(--text); }
+    .now { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; }
+    .now > .card { margin-top: 0; }
+    .facts { display: grid; gap: 10px; }
+    .facts .f { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .facts .f:last-child { border-bottom: 0; }
+    .facts .f span { color: var(--text-2); }
+    .facts .f b { font-variant-numeric: tabular-nums; }
+    .angles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+    .angles .card { padding: 18px 20px; margin: 0; }
+    .angles h3 { font-size: 16px; margin: 0 0 6px; }
+    .angles p { margin: 0; font-size: 14px; color: var(--text-2); }
+    .angles .ic { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin-bottom: 6px; }
+    @media (max-width: 1100px) { .kgrid, .now { grid-template-columns: 1fr; } .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .angles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 720px) { .wcap, .steps, .angles { grid-template-columns: 1fr; } .controls .field { width: 100%; } .rank .r { grid-template-columns: 24px minmax(0, 1fr) 70px 50px; } .seg { flex-wrap: wrap; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="assets/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="10" rx="1"/><rect x="12" y="1" width="3" height="14" rx="1"/></svg></span>
+        <span class="brand-text">Norge ASA</span>
+      </a>
+      <nav class="nav" aria-label="Studier"></nav>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Bytt mellom lyst og mørkt tema" title="Bytt tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Studie 21</span>
+        <h1 class="display">El Niño</h1>
+        <p class="muted">Hvert par til sju år blir havet i det østlige Stillehavet flere grader varmere enn normalt. Det kalles El Niño, og det endrer været over store deler av jorda. Her ser du hva som skjer i havet og lufta, alle El Niño- og La Niña-episoder siden 1950, hvordan de påvirker den globale temperaturen, og hva de betyr – og ikke betyr – for været i Europa og Norge.</p>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis" aria-live="polite"></section>
+
+    <h2 class="display section-title">Hva er El Niño?</h2>
+    <p class="section-lead">El Niño og La Niña er to ytterpunkter av ett og samme svingemønster i Stillehavet, som forskerne kaller ENSO (El Niño–Southern Oscillation). Havet og atmosfæren styrer hverandre. Velg tilstand for å se hva som endrer seg.</p>
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2 id="w-title">Et snitt langs ekvator i Stillehavet</h2><p>Fra Indonesia og Australia i vest til Sør-Amerika i øst. Skjematisk, ikke i målestokk.</p></div>
+        <div class="seg" role="group" aria-label="Tilstand i Stillehavet" id="wstate">
+          <button data-v="normal" aria-pressed="true">Normalt</button>
+          <button data-v="nino" aria-pressed="false">El Niño</button>
+          <button data-v="nina" aria-pressed="false">La Niña</button>
+        </div>
+      </div>
+      <div class="chart walker" id="walker" role="img" aria-label="Skjematisk tverrsnitt av Stillehavet langs ekvator med vind, skyer, havtemperatur og termoklin"></div>
+      <div class="wcap" id="wcap"></div>
+    </section>
+
+    <div class="steps">
+      <div class="card"><span class="n">1</span><h3>Passatvinden holder varmen i vest</h3><p>Normalt blåser passatvinden fra øst mot vest langs ekvator. Den skyver varmt overflatevann mot Indonesia, der havet blir et halvt meter høyere enn ved Sør-Amerika. Utenfor Peru strømmer kaldt, næringsrikt vann opp fra dypet.</p></div>
+      <div class="card"><span class="n">2</span><h3>Vinden svekkes</h3><p>Av og til svekkes passatvinden, ofte etter kraftige vestavindsstøt. Det varme vannet skvulper da østover som lange, undersjøiske bølger (Kelvin-bølger). Det tar to–tre måneder å krysse havet.</p></div>
+      <div class="card"><span class="n">3</span><h3>Havet og lufta forsterker hverandre</h3><p>Når østlige Stillehavet blir varmere, flytter regnskyene seg østover, trykkforskjellen over havet minker og passatvinden blir enda svakere. Denne selvforsterkende sløyfen kalles Bjerknes-tilbakekoblingen, etter den norske meteorologen Jacob Bjerknes.</p></div>
+      <div class="card"><span class="n">4</span><h3>… helt til varmen er brukt opp</h3><p>El Niño tapper havet for varme. Etter et års tid snur systemet, og ofte følger La Niña: sterkere passatvind og ekstra kaldt vann i øst. Hele syklusen tar typisk to til sju år, og ingen to episoder er like.</p></div>
+    </div>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Her måles El Niño</h2><p id="nm-sub"></p></div></div>
+        <div class="chart nmap" id="nmap"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Hvordan defineres en El Niño?</h2><p>NOAA, USAs vær- og havforvaltning, bruker Oceanic Niño Index (ONI).</p></div></div>
+        <div class="facts">
+          <div class="f"><span>Hva måles</span><b>Havtemperatur i Niño 3.4</b></div>
+          <div class="f"><span>Område</span><b>5° N–5° S, 170°–120° V</b></div>
+          <div class="f"><span>Indeks</span><b>Tremåneders snitt av avviket</b></div>
+          <div class="f"><span>El Niño</span><b>≥ +0,5 °C i minst fem sesonger på rad</b></div>
+          <div class="f"><span>La Niña</span><b>≤ −0,5 °C i minst fem sesonger på rad</b></div>
+          <div class="f"><span>Styrke (toppen)</span><b>Svak · moderat · sterk · svært sterk</b></div>
+          <div class="f"><span>Grenser</span><b>0,5 · 1,0 · 1,5 · 2,0 °C</b></div>
+        </div>
+        <p class="note">Normalen er et 30-årssnitt som flyttes hvert femte år, slik at den langsomme oppvarmingen av havet ikke blir tolket som El Niño. Styrkegradene er en vanlig inndeling, ikke en offisiell NOAA-definisjon.</p>
+      </section>
+    </div>
+
+    <h2 class="display section-title">75 år med El Niño og La Niña</h2>
+    <p class="section-lead">Rødt er El Niño, blått er La Niña. Hold musa over for å se hver sesong.</p>
+    <section class="card panel">
+      <div class="panel-head"><div><h2>Oceanic Niño Index, 1950–i dag</h2><p id="oni-sub"></p></div>
+        <div class="legend"><span class="item"><span class="sw" style="background:var(--warm)"></span>El Niño (≥ +0,5)</span><span class="item"><span class="sw" style="background:var(--cold)"></span>La Niña (≤ −0,5)</span><span class="item"><span class="sw" style="background:var(--neutral-mark)"></span>Nøytralt</span></div>
+      </div>
+      <div class="chart" id="oni"></div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <div><h2>Alle episoder</h2><p id="ep-sub"></p></div>
+        <div class="tbl-tools">
+          <div class="seg" role="group" aria-label="Type episode" id="eptype">
+            <button data-v="all" aria-pressed="true">Alle</button>
+            <button data-v="EN" aria-pressed="false">El Niño</button>
+            <button data-v="LN" aria-pressed="false">La Niña</button>
+          </div>
+          <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Last ned CSV</button>
+        </div>
+      </div>
+      <div id="eptable"></div>
+    </section>
+
+    <h2 class="display section-title" id="now-h">El Niño nå</h2>
+    <p class="section-lead" id="now-lead"></p>
+    <div class="now">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Sammenlignet med de store episodene</h2><p id="an-sub"></p></div></div>
+        <div class="legend" id="an-legend"></div>
+        <div class="chart" id="analog"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Siste uker</h2><p id="wk-sub"></p></div></div>
+        <div class="chart" id="weekly"></div>
+        <div class="facts" id="nowfacts" style="margin-top:10px"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Når Stillehavet varmer opp hele kloden</h2>
+    <p class="section-lead">Under El Niño gir havet fra seg varme til atmosfæren. Den globale middeltemperaturen stiger da med rundt en tidel grad, med tre–fire måneders forsinkelse. Rekordårene kommer derfor gjerne rett etter en El Niño, på toppen av den langsiktige oppvarmingen.</p>
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Global temperatur hvert år</h2><p>Avvik fra snittet 1951–1980. Fargen viser ENSO-tilstanden vinteren ved årsskiftet (ONI des–feb).</p></div></div>
+        <div class="chart" id="glob"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Varmere enn trenden?</h2><p id="gs-sub"></p></div></div>
+        <div class="chart" id="gscatter"></div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Fjernvirkninger i hele verden</h2>
+    <p class="section-lead">Fordi regnskyene over Stillehavet flytter seg, endres vindsystemene høyt oppe i atmosfæren. Det gir ringvirkninger langt unna – det meteorologene kaller fjernkoblinger. Kartet viser hvor tett temperaturen eller nedbøren i hvert land har fulgt El Niño-indeksen siden 1950.</p>
+    <section class="card panel">
+      <div class="controls">
+        <div class="field"><span class="label" id="var-l">Mål</span>
+          <div class="seg" role="group" aria-labelledby="var-l" id="tvar">
+            <button data-v="t" aria-pressed="true">Temperatur</button>
+            <button data-v="p" aria-pressed="false">Nedbør (helt år)</button>
+          </div>
+        </div>
+        <div class="field" id="seas-f"><span class="label" id="seas-l">Årstid</span>
+          <div class="seg" role="group" aria-labelledby="seas-l" id="tseas">
+            <button data-v="DJF" aria-pressed="true">Vinter</button>
+            <button data-v="MAM" aria-pressed="false">Vår</button>
+            <button data-v="JJA" aria-pressed="false">Sommer</button>
+            <button data-v="SON" aria-pressed="false">Høst</button>
+          </div>
+        </div>
+      </div>
+      <p class="note" id="t-note"></p>
+    </section>
+    <section class="kgrid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div><h2 id="m-title"></h2><p id="m-sub"></p></div>
+          <div class="seg" role="group" aria-label="Kartutsnitt" id="zoom">
+            <button data-v="verden" aria-pressed="true">Verden</button>
+            <button data-v="europa" aria-pressed="false">Europa</button>
+          </div>
+        </div>
+        <div class="chart wmap" id="map"></div>
+      </div>
+      <div class="card panel"><div class="panel-head"><div><h2>Sterkest sammenheng</h2><p id="r-sub"></p></div></div><div class="rank" id="rank"></div></div>
+    </section>
+
+    <h2 class="display section-title">Hva betyr El Niño for Europa?</h2>
+    <p class="section-lead">Kort sagt: mindre enn mange tror. Europa ligger langt fra Stillehavet, og været her styres mest av Atlanterhavet, jetstrømmen og tilfeldigheter. Signalet fra El Niño finnes, men det er svakt og drukner ofte i støyen. Tabellen viser korrelasjonen mellom ONI og temperaturen i hvert europeisk land, årstid for årstid. Uthevede ruter er statistisk signifikante (p &lt; 0,05).</p>
+    <section class="card panel">
+      <div class="panel-head"><div><h2>Europa, land for land</h2><p id="h-sub"></p></div></div>
+      <div class="heat" id="heat"></div>
+      <p class="note">Korrelasjon (r) mellom ONI og temperaturavviket i samme årstid, etter at den langsiktige oppvarmingen er trukket fra. Rødt: varmere enn vanlig under El Niño. Blått: kaldere. Klikk et land eller en rute for å se detaljene under.</p>
+    </section>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head">
+          <div><h2 id="c-title"></h2><p id="c-sub"></p></div>
+          <div class="field"><label for="csel" class="label">Land</label><select id="csel" class="select"></select></div>
+        </div>
+        <div class="chart" id="cscatter"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2 id="cb-title"></h2><p id="cb-sub"></p></div></div>
+        <div class="chart" id="cbars"></div>
+        <div id="cwin"></div>
+      </section>
+    </div>
+
+    <div class="grid2">
+      <section class="card panel">
+        <div class="panel-head">
+          <div><h2>Den nordatlantiske oscillasjonen (NAO)</h2><p id="nao-sub"></p></div>
+          <div class="seg" role="group" aria-label="Periode for NAO" id="naop">
+            <button data-v="DJF" aria-pressed="true">Des–feb</button>
+            <button data-v="JFM" aria-pressed="false">Jan–mar</button>
+          </div>
+        </div>
+        <div class="chart" id="nao"></div>
+      </section>
+      <section class="card panel">
+        <div class="panel-head"><div><h2>Slik kan El Niño nå Europa</h2><p>Mekanismene forskerne peker på</p></div></div>
+        <div class="facts">
+          <div class="f"><span><b>Via stratosfæren.</b> Under El Niño blir den kalde polarvirvelen over Arktis oftere svekket eller brutt opp i januar–mars. Det øker sjansen for en negativ NAO: kaldere og tørrere i Nord-Europa, våtere i Sør-Europa.</span><b></b></div>
+          <div class="f"><span><b>Via Atlanterhavet.</b> El Niño endrer vind og havtemperatur i tropiske Atlanterhavet og Karibia. Det kan påvirke jetstrømmen og lavtrykksbanene inn mot Europa.</span><b></b></div>
+          <div class="f"><span><b>Via høsten.</b> Den tydeligste europeiske sammenhengen i tallene her er høsten (sep–nov) i Mellom- og Sør-Europa, som har vært litt varmere i El Niño-år.</span><b></b></div>
+          <div class="f"><span><b>Signal mot støy.</b> Selv en korrelasjon på 0,3 betyr at El Niño forklarer bare rundt 10 % av variasjonen fra år til år. Resten er annet vær.</span><b></b></div>
+        </div>
+      </section>
+    </div>
+
+    <h2 class="display section-title">Andre vinklinger</h2>
+    <p class="section-lead">El Niño handler om mer enn vær. Her er noen av ringvirkningene som når Norge og Europa også.</p>
+    <div class="angles">
+      <div class="card"><div class="ic">Laks og fiskefôr</div><h3>Ansjosen forsvinner fra Peru</h3><p>Det kalde, næringsrike oppstrømsvannet utenfor Peru gjør fiskeriet etter ansjos (anchoveta) til et av verdens største. Under El Niño stopper oppstrømmingen, og fangstene kan falle kraftig. Mye av fangsten blir fiskemel og fiskeolje – en viktig ingrediens i fôret til norsk oppdrettslaks.</p></div>
+      <div class="card"><div class="ic">Matpriser</div><h3>Kakao, kaffe, ris og palmeolje</h3><p>Tørke i Sørøst-Asia, Australia, deler av Afrika og India rammer avlinger av ris, palmeolje, sukker, kakao og kaffe. Prisene på verdensmarkedet kan stige i månedene etter en sterk El Niño, og det merkes også i norske butikker.</p></div>
+      <div class="card"><div class="ic">Skipsfart</div><h3>Panamakanalen går tørr</h3><p>Panamakanalen drives med ferskvann fra innsjøer som fylles av regn. Under El Niño 2023–24 ble nedbøren så lav at antall skip som fikk passere, ble kraftig redusert i en periode. Det forsinket varer mellom Asia, Amerika og Europa.</p></div>
+      <div class="card"><div class="ic">Havet</div><h3>Korallrevene blekes</h3><p>Rekordhøye havtemperaturer under sterke El Niño-episoder har ført til omfattende korallbleking, blant annet på Great Barrier Reef i 1998 og 2016 og globalt i 2023–24.</p></div>
+      <div class="card"><div class="ic">Natur og helse</div><h3>Skogbranner, flom og sykdom</h3><p>Tørke gir skog- og torvbranner i Indonesia og Australia, mens Peru og Ecuador får flom og jordskred. Varme og regn endrer også utbredelsen av mygg som sprer denguefeber og malaria.</p></div>
+      <div class="card"><div class="ic">Klima</div><h3>Blir El Niño sterkere med global oppvarming?</h3><p>Forskerne er ikke enige om El Niño blir hyppigere. Men fordi lufta er varmere og holder mer fuktighet, ventes følgene – tørke, hetebølger og styrtregn – å bli kraftigere. Og hver nye El Niño starter fra et høyere temperaturnivå.</p></div>
+    </div>
+
+    <section class="story">
+      <div><h3>Navnet</h3><p>Fiskere i Peru og Ecuador la merke til at havet ble varmt og fisken borte rundt jul. De kalte fenomenet El Niño, «gutten» eller Jesusbarnet. La Niña, «jenta», er det motsatte. Den svingende lufttrykkforskjellen over Stillehavet ble oppdaget av Gilbert Walker på 1920-tallet, mens nordmannen Jacob Bjerknes i 1969 viste at hav og atmosfære henger sammen.</p></div>
+      <div><h3>Slik er tallene beregnet</h3><p>Temperaturavvikene per land er fra ERA5-reanalysen. Den langsiktige oppvarmingen er trukket fra med en glatt trend (andregradspolynom for 1950–i dag), slik at vi ser svingningene fra år til år. Korrelasjonen er Pearsons r med tosidig t-test. Mange land testes samtidig, så noen vil se signifikante ut ved en tilfeldighet. Se etter mønstre, ikke enkeltland.</p></div>
+      <div><h3>Kilder</h3><p>NOAA Climate Prediction Center: <a href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/ensostuff/ONI_v5.php">ONI</a>, Niño-regioner (ERSST v5 og OISST, ukentlig og månedlig) og <a href="https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.shtml">NAO</a>. NASA GISS: <a href="https://data.giss.nasa.gov/gistemp/">GISTEMP v4</a>. NOAA NCEI: Climate at a Glance (Europa). Copernicus ERA5 via <a href="https://ourworldindata.org/">Our World in Data</a>: temperatur og nedbør per land. Kart: Eurostat GISCO.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>Kilde: NOAA, NASA GISS, Copernicus ERA5 (via Our World in Data) · Kart: © EuroGeographics (Eurostat GISCO)</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+  <script src="assets/elnino.js"></script>
+</body>
+</html>

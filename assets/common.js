@@ -57,6 +57,7 @@
       ["elbil.html", "Elbiler i verden", "Andel av nybilsalg og bilpark i 60 land"],
       ["bolig.html", "Boligpriser i verden", "Boligpriser, husleie og inntekt i 50 land"],
       ["rettsstat.html", "Rettsstaten i verden", "Korrupsjon, rettigheter og domstoler i 143 land"],
+      ["elnino.html", "El Niño", "Stillehavet, verdensværet og Europa"],
     ] },
   ];
   const STUDIES = [["./", "Oversikt"], ...MENU.flatMap((g) => g.items.map(([h, n]) => [h, n]))];

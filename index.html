@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Norge ASA – skatt, velferd og samfunn i tall</title>
-  <meta name="description" content="Norge ASA: interaktive studier av norsk skatt, offentlig pengebruk, kommuner og befolkning, og Norge sammenlignet med resten av verden. Basert på åpne data fra SSB, FHI, Eurostat, OECD og IEA.">
+  <meta name="description" content="Norge ASA: interaktive studier av norsk skatt, offentlig pengebruk, kommuner og befolkning, og Norge sammenlignet med resten av verden. Basert på åpne data fra SSB, FHI, Eurostat, OECD, IEA og NOAA.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -87,7 +87,7 @@
       <div>
         <span class="eyebrow">Skatt, velferd og samfunn i tall</span>
         <h1 class="display">Norge, <em>målt og veid</em></h1>
-        <p class="lead">Hvor kommer pengene fra, og hvor går de? Hvordan står Norge seg mot resten av verden? Her finner du interaktive studier av skatt, offentlig pengebruk, kommuner og befolkning, og av handel, elbiler og rettsstat i andre land. Alle tall hentes fra åpne kilder som SSB, FHI, Eurostat, OECD og IEA, og oppdateres jevnlig.</p>
+        <p class="lead">Hvor kommer pengene fra, og hvor går de? Hvordan står Norge seg mot resten av verden? Her finner du interaktive studier av skatt, offentlig pengebruk, kommuner og befolkning, og av handel, elbiler, rettsstat og El Niño i resten av verden. Alle tall hentes fra åpne kilder som SSB, FHI, Eurostat, OECD, IEA og NOAA, og oppdateres jevnlig.</p>
       </div>
       <div class="stats" id="stats" aria-live="polite">
         <div class="card stat"><div class="l">Skatteinngang i alt</div><div class="v">–</div><div class="s">&nbsp;</div></div>
@@ -282,6 +282,15 @@
           <h3 class="display">Sykefraværet i kommunene</h3>
           <p>Hvor er sykefraværet høyest, og hvorfor? Se legemeldt sykefravær i alle kommuner fordelt på kjønn og alder, justert for befolkningssammensetning, og sammenhengen med uføretrygd og utdanning.</p>
           <div class="meta"><span class="pill">FHI</span><span class="pill">SSB</span><span class="go">Utforsk →</span></div>
+        </div>
+      </a>
+      <a class="card study" data-g="internasjonalt" href="elnino.html">
+        <div class="thumb" id="thumb-en" aria-hidden="true"></div>
+        <div class="body">
+          <span class="eyebrow">Studie 21 · Internasjonalt</span>
+          <h3 class="display">El Niño</h3>
+          <p>Hva er El Niño, og hvorfor oppstår det? Se alle El Niño- og La Niña-episoder siden 1950, dagens episode, effekten på global temperatur og hva El Niño betyr for været i Europa og Norge.</p>
+          <div class="meta"><span class="pill">NOAA</span><span class="pill">NASA</span><span class="pill">ERA5</span><span class="go">Utforsk →</span></div>
         </div>
       </a>
       <div class="card study soon">
@@ -673,8 +682,19 @@
         svg.append("text").attr("x", x(Y[Y.length - 1]) + 6).attr("y", y(v[v.length - 1]) + 4).attr("fill", "var(--text-2)").attr("font-size", 11.5).text(`${n} ${v[v.length - 1].toFixed(1).replace(".", ",")} %`);
       });
     }
-    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf();
-    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); });
+    const en = await fetch("data/elnino.json").then((r) => r.json());
+    function drawEn() {
+      const el = document.getElementById("thumb-en");
+      el.innerHTML = "";
+      const w = 400, h = 230, m = { l: 30, r: 16, t: 30, b: 20 }, O = en.oni;
+      const x = d3.scaleLinear([0, O.length], [m.l, w - m.r]), y = d3.scaleLinear([-2.8, 2.8], [h - m.b, m.t]);
+      const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+      svg.append("text").attr("x", 24).attr("y", 18).attr("fill", "var(--text-3)").attr("font-size", 12).text(`El Niño (rødt) og La Niña (blått), 1950–${en.start + Math.floor((O.length - 1) / 12)}`);
+      const bw = (w - m.l - m.r) / O.length + 0.3;
+      O.forEach((v, i) => svg.append("rect").attr("x", x(i)).attr("width", bw).attr("y", y(Math.max(0, v))).attr("height", Math.abs(y(v) - y(0))).attr("fill", v >= 0.5 ? "var(--series-2)" : v <= -0.5 ? "var(--series-1)" : "var(--neutral-mark)"));
+    }
+    drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawEn();
+    S.onThemeChange(() => { drawMap(); drawPetro(); drawFormue(); drawProfil(); drawAlder(); drawBef(); drawUl(); drawEi(); drawNa(); drawUtg(); drawOlje(); drawEu(); drawHv(); drawKh(); drawRs(); drawHa(); drawEl(); drawBo(); drawBr(); drawSf(); drawEn(); });
   })();
   </script>
 </body>
